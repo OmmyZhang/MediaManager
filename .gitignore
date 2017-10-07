@@ -1,3 +1,6 @@
 *.pyc
 data/
 __pycache__/
+.coverage
+.idea/
+Coverage_Python/

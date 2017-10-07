@@ -1,3 +1,5 @@
+# 包含完整项目的Docker，软工课不需要
+
 FROM django
 
 WORKDIR /app

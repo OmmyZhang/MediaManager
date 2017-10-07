@@ -1,0 +1,10 @@
+# 只包含运行环境的Docker，位于DockerHub: wangrunji0408/praise_the_sun
+
+# > docker build -f Dockerfile_env -t wangrunji0408/praise_the_sun .
+# > docker push wangrunji0408/praise_the_sun
+
+FROM django
+
+RUN pip install pypinyin coverage
+
+EXPOSE 8000
