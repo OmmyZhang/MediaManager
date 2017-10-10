@@ -5,7 +5,7 @@
 配置Python环境：
 
 ```
-pip install django pypinyin
+pip install django 
 ```
 
 启动：
