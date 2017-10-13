@@ -1,7 +1,8 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect,HttpResponse
 from django.contrib.auth import authenticate , login, logout
 from django.contrib.auth.models import User
+import os
 
 # Create your views here.
 
@@ -63,7 +64,11 @@ def register_view(request):
             newM = User.objects.create_user(nam,mail,passwd)
             newM.save()
             login(request,newM)
-            return HttpResponseRedirect('/')
+            try:
+                os.makedirs('data/'+nam)
+                return HttpResponseRedirect('/')
+            except:
+                return HttpResponse('<h1>Create dir fail')
 
 
     context =   {
