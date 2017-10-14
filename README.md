@@ -2,6 +2,16 @@
 
 ## 开发说明
 
+### API文档
+
+位于`docs/swagger.yml`
+
+`swagger`是一种通用的WebAPI描述格式。可自动生成前后端的代码（可惜并没有`Django-Rest-Framework`）
+
+打开在线编辑器 https://editor.swagger.io/
+
+把全文复制到左侧编辑器中，在右侧查看
+
 ### 后端单元测试
 
 写在各APP文件夹下的`tests.py`文件中。
