@@ -10,7 +10,7 @@ def login_view(request):
     try:
         go_url = request.GET['next']
     except:
-        go_url = '/'
+        go_url = '/files/'
 
     name   = ''
     passwd = ''
