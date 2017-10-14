@@ -1,0 +1,42 @@
+<html>
+<head>
+<title> file_page </title>
+</head>
+<body>
+	<p>欢迎{{n}}</p>
+
+	<form enctype='multipart/form-data' action='/files/Upload_file/' method="post" class="form-horizontal">
+		{% csrf_token %}
+		<div class = "form-group">
+			<br>请在下面上传资源</br>
+			<input type="file" name="Upload_file"/>
+			<button type="submit" class = "btn btn-warning">提交
+		</div>
+	</form>
+
+	<h1 class="text-center">下面是您已经上传的文件</h1>
+	{%for item in File_list %}
+		<form action = "/files/Download_file/" method="post" class="form-horizontal">
+			<div class = "form-group">
+				<label>文件名:
+					{{item}}
+				</label>
+				<input type="hidden" name = "File_name" value = {{item}}>
+				<input type="submit" value = "下载">
+			</div>
+		</form>
+	{% endfor %}
+				
+	<br><a href='/accounts/logout/'>logout</a>
+	
+
+
+<Script language='javascript'>
+	var err = '{{e}}';
+	if (err == 'no upload file'):
+		alert('请先选择文件再上传');
+	if (err == 'upload over'):
+		alert('上传完成');
+</script>
+</body>
+</html>
