@@ -67,7 +67,7 @@ def Download_file(request):
     #print(file_path)
     response = StreamingHttpResponse(file_iterator(file_path))
     response['Content-Type'] = 'application/octet-stream'
-    response['Content-Disposition'] = 'attachment;filename={0}'.format(file_name.encode('utf8'))
+    response['Content-Disposition'] = 'attachment;filename={0}'.format(file_name)
     return response
 
 @csrf_exempt
