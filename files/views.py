@@ -8,9 +8,9 @@ import os
 import re
 from os import path
 from django.http import StreamingHttpResponse
-import mimetypes
-import MimeWriter
-import mimetools
+# import mimetypes
+# import MimeWriter
+# import mimetools
 
 # Create your views here.
 @login_required
