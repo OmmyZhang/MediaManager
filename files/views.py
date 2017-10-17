@@ -8,11 +8,37 @@ import os
 import re
 from os import path
 from django.http import StreamingHttpResponse
+from .models import FileToGroup
 # import mimetypes
 # import MimeWriter
 # import mimetools
 
 # Create your views here.
+
+def createRelationship(fu,gn): # create a relationship between file and group 
+    fg = FileToGroup(file_url = fu , group_name = gn)
+    fg.save()
+
+def checkRelationship(fu,gn): # check if file belong to this group
+    if FileToGroup.objects.filter(file_url = fu , group_name = gn):
+        return True
+    else:
+        return False
+
+def groupFiles(gn): # show all files in the group
+    f = []
+    for fg in FileToGroup.objects.filter(group_name = gn):
+        f.append(fg.file_url)
+    return f
+
+def fileGroups(fu):# show all groups that the file belong to
+    gn = []
+    for fg in FileToGroup.objects.filter(file_url = fu):
+        gn.append(fg.group_name)
+    return gn
+
+
+
 @login_required
 def index(request):
     return HttpResponse("File")
