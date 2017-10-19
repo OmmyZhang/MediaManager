@@ -2,17 +2,31 @@
 文件接口如下：
 （1）Upload_file：
 Input:
-No.1: post_name 上传文件时Http标签input中对应的name		
-No.2: 上传文件的Http请求
-No.3: 用户名
-No.4: 用户的操作路径（eg:data/weijy15/test/file/oo）
+No.1 ————> 待上传的文件（request.FILES.get的返回类型）
+No.2 ————> 要存储的路径（e.g. data/weijy/1.pptx)
 Output:
-Result: 一个指示上传结果的字符串（有两种可能"Success","Fail"）
+True ————> 上传成功
+False ————> 存储路径不存在或硬盘写满，上传失败
 
 （2）Download_file:
 Input:
-No.1: 文件详细路径
+No.1 ————> 下载路径（e.g. data/weijy/1.pptx）
 Output:
-Result:
-如果下载成功 返回Http_response
-如果失败将返回串“Fail”
+HttpResponse ————> 下载成功,获得相应的HttpResponse
+False ————> 路径不存在，下载失败
+
+(3) Remove:
+Input:
+No.1 ————> 文件／目录路径（e.g: data/weijy/1.pptx）
+Output:
+True ————> 删除成功
+False ————> 文件或路径不存在，删除失败
+
+(4) RM(实现了重命名和移动双重功能）:
+Input:
+No.1 ————> 文件／目录路径（e.g: 重命名：data/weijy/1.pptx 移动：data/weijy/1.pptx）
+No.2 ————> 新路径（e.g: 重命名：data/weijy/2.pptx 移动:data/weijy1/1.pptx）
+Output:
+True ————> 重命名／移动成功
+False ————> 文件或路径不存在，重命名／移动失败
+
