@@ -6,6 +6,21 @@ import os,time
 
 # Create your views here.
 
+
+def createUser(username,passwd,email):
+    newM = User.objects.create_user(nam,mail,passwd)
+    while(True):
+        user_id = str(int(time.time()*1000) % 100000) + str(hash(nam) % 10000)
+        if not User.objects.filter(first_name = user_id):
+                break;
+    newM.first_name = user_id;
+    newM.save()
+    login(request,newM)
+    
+    os.makedirs('data/'+nam)
+    
+    return user_id
+
 def login_view(request):
     try:
         go_url = request.GET['next']
