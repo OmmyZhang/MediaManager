@@ -17,7 +17,7 @@ from .models import FileToTag,StFile,StTag
 
 def createFileToTag(fi,ti): # create a relationship between file and tag
     assert getFile(fi) is not None , "Wrong file id"
-   # assert getTag(ti) is not None , "Wrong tag id"
+    assert getTag(ti) is not None , "Wrong tag id"
     ft = FileToTag(file_id = fi , tag_id = ti)
     ft.save()
 
@@ -52,24 +52,14 @@ def getFile(id):
         return None
 
 def newFile(path,name):
-    while(True):
-        file_id = int(time.time()*1000) % 100000 * 10000 + hash(path) % 100 * 100 + (hash(name) % 100)
-        if getFile(file_id) is None:
-            break;
-    newF = StFile(id = file_id , path = path , name = name)
+    newF = StFile(path = path , name = name)
     newF.save()
-    return file_id
+    return newF.id
 
 def newTag(name,isGroup = False):
-    while(True):
-        tag_id = int(time.time()*1000) % 100000 * 10000 +  (hash(name) % 10000)
-        if isGroup:
-            tag_id = -tag_id
-        if getTag(tag_id) is None:
-            break;
-    newT = StTag(id = tag_id , name = name)
+    newT = StTag(name = name, isGroup = isGroup)
     newT.save()
-    return tag_id
+    return newT.id
 
         
 #------------------------------------------------------------------------

@@ -3,8 +3,7 @@ from .models import Belong
 
 # Create your views here.
 
-def createBelong(ui,gi): # create a relationship between user and group 
-    assert gi < 0 , "group id should < 0"
+def createBelong(ui,gi): # create a relationship between user and group
     b = Belong(user_id = ui , group_id = gi)
     b.save()
 

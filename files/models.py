@@ -11,13 +11,12 @@ class FileToTag(models.Model):
         return str(self.file_url) + '-->' + str(self.tag_id)
 
 class StTag(models.Model):
-    id   = models.IntegerField(primary_key = True) 
     name = models.CharField(max_length = 100)
+    isGroup = models.BooleanField(default = False)
     def __str__(self):
         return (str(self.id) + ' is ' +self.name)#.encode('utf-8')
 
 class StFile(models.Model):
-    id   = models.IntegerField(primary_key = True) 
     path = models.CharField(max_length = 200) 
     name = models.CharField(max_length = 100)
     def __str__(self):

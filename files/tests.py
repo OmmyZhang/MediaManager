@@ -1,6 +1,8 @@
 #encoding:utf-8
 from django.test import TestCase
 from .views import *
+from accounts.views import *
+from setting.views import *
 # Create your tests here.
 
 class SampleTestCase(TestCase):
@@ -25,4 +27,21 @@ class SampleTestCase(TestCase):
         print('file1: ',getFile(f1))
         print('tag1: ',getTag(t1))
         print('group1: ',getTag(g1))
-        print(getTag(g1).name)
+
+        usr = createUser('用户1','passwd','1@1.com')
+        print(usr)
+        createBelong(usr,g1)
+        
+        uu = getUser(usr)
+
+        uu.username = 'user1'
+        uu.save()
+
+        usr2 = createUser('用户2','passwd','1@2.com')
+
+        createBelong(usr2,g1)
+        print(groupMems(g1))
+
+        for ur in groupMems(g1):
+            print(getUser(ur).username)
+            print(getUser(ur).email)

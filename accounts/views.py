@@ -8,18 +8,20 @@ import os,time
 
 
 def createUser(username,passwd,email):
-    newM = User.objects.create_user(nam,mail,passwd)
-    while(True):
-        user_id = str(int(time.time()*1000) % 100000) + str(hash(nam) % 10000)
-        if not User.objects.filter(first_name = user_id):
-                break;
-    newM.first_name = user_id;
+    newM = User.objects.create_user(username,email,passwd)
     newM.save()
-    login(request,newM)
     
-    os.makedirs('data/'+nam)
+    #os.makedirs('data/'+nam)
     
-    return user_id
+    return newM.id #user_id
+
+def getUser(id):
+    try:
+        return User.objects.get(id = id)
+    except:
+        return None
+
+#------------------------------------
 
 def login_view(request):
     try:
