@@ -23,7 +23,6 @@ def Save_file(File, save_path):
     except:
         return False;
     return True;
-from .models import FileToGroup
 
 def createFileToTag(fi,ti): # create a relationship between file and tag
     assert getFile(fi) is not None , "Wrong file id"
@@ -74,9 +73,6 @@ def newTag(name,isGroup = False):
         
 #------------------------------------------------------------------------
 
-@login_required
-def index(request):
-    return HttpResponse("File")
 
 def get_list(user_name):
     path = "data/" + user_name
@@ -90,7 +86,7 @@ def file_show(user_name):
     file_list = get_list(now_user_name)
     return file_list
 
-@csrf_exemptdef 
+@csrf_exempt 
 def Read_file(download_path):
     if not os.path.exists(download_path):
         return False
