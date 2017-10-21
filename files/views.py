@@ -8,7 +8,7 @@ from django.http import StreamingHttpResponse
 
 # Create your views here.
 @csrf_exempt
-def Upload_file(File, save_path):
+def Save_file(File, save_path):
     if not os.path.exists(save_path):
         return False;
     try:
@@ -62,7 +62,7 @@ def file_show(user_name):
     return file_list
 
 @csrf_exemptdef 
-def Download_file(download_path):
+def Read_file(download_path):
     if not os.path.exists(download_path):
         return False
     try:

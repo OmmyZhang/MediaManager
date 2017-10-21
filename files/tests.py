@@ -44,4 +44,4 @@ class SampleTestCase(TestCase):
 
         for ur in groupMems(g1):
             print(getUser(ur).username)
-            print(getUser(ur).email)í
+            print(getUser(ur).email)

@@ -1,6 +1,6 @@
 本应用将提供用于文件，文件夹操作的各种接口，所有的接口位于views.py中，其他函数都用于完成内部的逻辑实现，外部不用关心
 文件接口如下：
-（1）Upload_file(上传文件)：
+（1）Save_file(上传文件)：
 调用形式：Upload_fiule(File, path)
 Input:
 No.1 ————> 待上传的文件（request.FILES.get的返回类型）
@@ -9,7 +9,7 @@ Output:
 True ————> 上传成功
 False ————> 存储路径不存在或硬盘写满，上传失败
 
-（2）Download_file(下载文件):
+（2）Read_file(下载文件):
 调用形式：Download_file(path)
 Input:
 No.1 ————> 下载路径（e.g. data/weijy/1.pptx）
