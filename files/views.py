@@ -5,13 +5,7 @@ import os,time
 import re
 from os import path
 from django.http import StreamingHttpResponse
-<<<<<<< HEAD
 from .models import FileToTag,StFile,StTag
-# import mimetypes
-# import MimeWriter
-# import mimetools
-=======
->>>>>>> file_system
 
 # Create your views here.
 @csrf_exempt
