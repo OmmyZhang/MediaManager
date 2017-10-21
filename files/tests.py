@@ -18,6 +18,7 @@ class SampleTestCase(TestCase):
         print(f2)
         t1 = newTag('pic')
         g1 = newTag('贵系',True)
+        g2 = newTag('软件',True)
         createFileToTag(f1,t1)
         createFileToTag(f1,g1)
         createFileToTag(f2,t1)
@@ -45,3 +46,7 @@ class SampleTestCase(TestCase):
         for ur in groupMems(g1):
             print(getUser(ur).username)
             print(getUser(ur).email)
+
+        print(allGroup())
+        for gg in allGroup():
+            print('group:',getTag(gg))

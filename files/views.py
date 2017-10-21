@@ -44,6 +44,11 @@ def getTag(id):
         return StTag.objects.get(id = id)
     except:
         return None
+def allGroup():
+    gs = []
+    for tt in StTag.objects.filter(isGroup = True):
+        gs.append(tt.id)
+    return gs
 
 def getFile(id):
     try:
