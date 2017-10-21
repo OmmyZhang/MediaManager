@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import FileToGroup
+from .models import FileToTag,StTag,StFile
 # Register your models here.
 
-admin.site.register(FileToGroup)
+admin.site.register(FileToTag)
+admin.site.register(StTag)
+admin.site.register(StFile)

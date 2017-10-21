@@ -9,12 +9,12 @@ class SampleTestCase(TestCase):
     def test_sample1(self):
         """Just a sample test"""
         from setting.views import createBelong,checkBelong,groupMems,userGroups
-        createBelong(110,'group1')
-        createBelong(120,'group1')
-        createBelong(110,'police')
-        print(checkBelong(110,'group1'))  
-        print(groupMems('group1'))
-        print(userGroups(110))
+        createBelong(11,-1)
+        createBelong(12,-1)
+        createBelong(11,-5)
+        print(checkBelong(11,-1))  
+        print(groupMems(-1))
+        print(userGroups(11))
 
 
     def test_sample2(self):
