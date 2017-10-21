@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect,HttpResponse
 from django.contrib.auth import authenticate , login, logout
 from django.contrib.auth.models import User
-import os
+import os,time
 
 # Create your views here.
 
@@ -62,6 +62,11 @@ def register_view(request):
                     err = 'alr'
         if not err:
             newM = User.objects.create_user(nam,mail,passwd)
+            while(True):
+                user_id = str(int(time.time()*1000) % 10000) + str(hash(nam) % 10000)
+                if not User.objects.filter(first_name = user_id):
+                    break;
+            newM.first_name = user_id;
             newM.save()
             login(request,newM)
             try:
