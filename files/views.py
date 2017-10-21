@@ -25,13 +25,12 @@ def Download_file(download_path):
     if not os.path.exists(download_path):
         return False
     try:
-        response = StreamingHttpResponse(file_iterator(download_path))
-        response['Content-Type'] = 'application/octet-stream'
-        response['Content-Disposition'] = 'attachment;filename={0}'.format(file_name) 
+        return file_terator(download_path)
+        #response = StreamingHttpResponse(file_iterator(download_path))
+        #response['Content-Type'] = 'application/octet-stream'
+        #response['Content-Disposition'] = 'attachment;filename={0}'.format(file_name) 
     except:
-        return False
-    return response
-        
+        return False        
 @csrf_exempt
 def file_iterator(file_name, chunck_size = 512):
     with open(file_name,'rb+') as f:
@@ -60,3 +59,13 @@ def RM(path, new_path):
     Remove(path)
     return True
 
+def New(path, Name="New_Folder"):
+    if not os.path.exists(path):
+        return False;
+    if not os.path.isdir(path):
+        return False;
+    try:
+        os.mkdir(path + "/" + Name)
+        return True
+    except:
+        return False
