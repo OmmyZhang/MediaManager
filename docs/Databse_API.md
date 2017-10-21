@@ -40,6 +40,8 @@
   + int
 + newTag(name,isGroup = False) 返回id
   + int
++ allGroup() 所有组
+  + int数组
 
 
 
