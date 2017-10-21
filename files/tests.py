@@ -1,10 +1,3 @@
-#encoding:utf-8
-from django.test import TestCase
-from .views import *
-from accounts.views import *
-from setting.views import *
-# Create your tests here.
-
 class SampleTestCase(TestCase):
     def setUp(self):
         pass

@@ -4,11 +4,24 @@ from django.db import models
 
 # Create your models here.
 
-class FileToGroup(models.Model):
-    file_url = models.CharField(max_length=500)
-    group_name = models.CharField(max_length=100)
+class FileToTag(models.Model):
+    file_id = models.IntegerField(default=0)
+    tag_id = models.IntegerField(default=0)  # < 0 if a group 
     def __str__(self):
-        return str(self.file_url) + '-->' + self.group_name
+        return str(self.file_url) + '-->' + str(self.tag_id)
+
+class StTag(models.Model):
+    name = models.CharField(max_length = 100)
+    isGroup = models.BooleanField(default = False)
+    def __str__(self):
+        return (str(self.id) + ' is ' +self.name)#.encode('utf-8')
+
+class StFile(models.Model):
+    path = models.CharField(max_length = 200) 
+    name = models.CharField(max_length = 100)
+    def __str__(self):
+        return (str(self.id) + ' is ' + self.path + self.name)#.encode('utf-8')
+    
 
 
 

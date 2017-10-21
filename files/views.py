@@ -1,10 +1,17 @@
 #-*-coding:UTF-8-*-
 from django.http import HttpResponseRedirect,HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-import os
+import os,time
 import re
 from os import path
 from django.http import StreamingHttpResponse
+<<<<<<< HEAD
+from .models import FileToTag,StFile,StTag
+# import mimetypes
+# import MimeWriter
+# import mimetools
+=======
+>>>>>>> file_system
 
 # Create your views here.
 @csrf_exempt
@@ -19,31 +26,57 @@ def Save_file(File, save_path):
     except:
         return False;
     return True;
+
 from .models import FileToGroup
 
-def createRelationship(fu,gn): # create a relationship between file and group 
-    fg = FileToGroup(file_url = fu , group_name = gn)
-    fg.save()
+def createFileToTag(fi,ti): # create a relationship between file and tag
+    assert getFile(fi) is not None , "Wrong file id"
+    assert getTag(ti) is not None , "Wrong tag id"
+    ft = FileToTag(file_id = fi , tag_id = ti)
+    ft.save()
 
-def checkRelationship(fu,gn): # check if file belong to this group
-    if FileToGroup.objects.filter(file_url = fu , group_name = gn):
+def checkFileToTag(fi,ti): # check if file has this tag
+    if FileToTag.objects.filter(file_id = fi , tag_id= ti):
         return True
     else:
         return False
 
-def groupFiles(gn): # show all files in the group
+def tagFiles(ti): # show all files(' id) under this tag
     f = []
-    for fg in FileToGroup.objects.filter(group_name = gn):
-        f.append(fg.file_url)
+    for ft in FileToTag.objects.filter(tag_id = ti):
+        f.append(ft.file_id)
     return f
 
-def fileGroups(fu):# show all groups that the file belong to
-    gn = []
-    for fg in FileToGroup.objects.filter(file_url = fu):
-        gn.append(fg.group_name)
-    return gn
+def fileTags(fi):# show all tags(' id) that this file has
+    t = []
+    for ft in FileToTag.objects.filter(file_id = fi):
+        t.append(ft.tag_id)
+    return t
 
+def getTag(id):
+    try:
+        return StTag.objects.get(id = id)
+    except:
+        return None
 
+def getFile(id):
+    try:
+        return StFile.objects.get(id = id)
+    except:
+        return None
+
+def newFile(path,name):
+    newF = StFile(path = path , name = name)
+    newF.save()
+    return newF.id
+
+def newTag(name,isGroup = False):
+    newT = StTag(name = name, isGroup = isGroup)
+    newT.save()
+    return newT.id
+
+        
+#------------------------------------------------------------------------
 
 @login_required
 def index(request):
