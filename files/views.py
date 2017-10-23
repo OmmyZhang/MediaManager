@@ -6,9 +6,9 @@ import re
 from os import path
 from django.http import StreamingHttpResponse
 from .models import FileToTag,StFile,StTag
-
-# Create your views here.
-@csrf_exempt
+# import mimetypes
+# import MimeWriter
+# import mimetools
 def Save_file(File, save_path):
     if not os.path.exists(save_path):
         return False;
