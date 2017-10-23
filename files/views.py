@@ -68,19 +68,6 @@ def newTag(name,isGroup = False):
     newT.save()
     return newT.id
 
-        
-#------------------------------------------------------------------------
-
-def index(request):
-    return HttpResponse("File")
-
-def get_list(user_name):
-    path = "data/" + user_name
-    answer = []
-    for root,dirs,files in os.walk(path):
-        answer = files
-    return answer
-
 def file_show(user_name):
     now_user_name = user_name
     file_list = get_list(now_user_name)
