@@ -132,3 +132,13 @@ def New(path, Name="New_Folder"):
         return True
     except:
         return False
+
+def List(path):
+    if not os.path.exists(path) or not os.path.isdir(path):
+        return False;
+    try:
+        file_list = os.listdir(path)
+        return True
+    except:
+        return False
+
