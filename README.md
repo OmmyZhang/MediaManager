@@ -2,7 +2,7 @@
 
 ## 开发说明
 
-### API文档
+### 前后端交互API文档
 
 位于`docs/swagger.yml`
 
@@ -11,6 +11,10 @@
 打开在线编辑器 https://editor.swagger.io/
 
 把全文复制到左侧编辑器中，在右侧查看
+
+### 后端数据方面API文档
+
+位于 `docs/Database_API.md`
 
 ### 后端单元测试
 
@@ -61,7 +65,7 @@
 
 ### 在本机环境运行
 
-使用Python2.7
+使用Python3
 
 配置Python环境：
 
@@ -77,7 +81,7 @@ python manage.py runserver
 
 访问：http://localhost:8000
 
-初始用户名：admin，密码：ruan_gong
+初始用户名：admin，密码：ruan\_gong
 
 ### 用Docker部署运行
 
