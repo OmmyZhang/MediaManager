@@ -4,6 +4,6 @@ __pycache__/
 .coverage
 .idea/
 Coverage_Python/
-/db.sqlite3
+db.sqlite3
 /static/node_modules/
 /package-lock.json
