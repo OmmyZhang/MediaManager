@@ -8,14 +8,7 @@ class SampleTestCase(TestCase):
 
     def test_sample1(self):
         """Just a sample test"""
-        from setting.views import createBelong,checkBelong,groupMems,userGroups
-        createBelong(11,-1)
-        createBelong(12,-1)
-        createBelong(11,-5)
-        print(checkBelong(11,-1))  
-        print(groupMems(-1))
-        print(userGroups(11))
-
+        pass
 
     def test_sample2(self):
         """Just a sample test"""

@@ -15,53 +15,59 @@ from .models import FileToTag,StFile,StTag
 
 # Create your views here.
 
-def createFileToTag(fi,ti): # create a relationship between file and tag
-    assert getFile(fi) is not None , "Wrong file id"
-    assert getTag(ti) is not None , "Wrong tag id"
+def create_FileToTag(fi,ti): # create a relationship between file and tag
+    assert get_file(fi) is not None , "Wrong file id"
+    assert get_tag(ti) is not None , "Wrong tag id"
     ft = FileToTag(file_id = fi , tag_id = ti)
     ft.save()
 
-def checkFileToTag(fi,ti): # check if file has this tag
+def check_FileToTag(fi,ti): # check if file has this tag
     if FileToTag.objects.filter(file_id = fi , tag_id= ti):
         return True
     else:
         return False
 
-def tagFiles(ti): # show all files(' id) under this tag
+def tag_files(ti): # show all files(' id) under this tag
     f = []
     for ft in FileToTag.objects.filter(tag_id = ti):
         f.append(ft.file_id)
     return f
 
-def fileTags(fi):# show all tags(' id) that this file has
+def file_tags(fi):# show all tags(' id) that this file has
     t = []
     for ft in FileToTag.objects.filter(file_id = fi):
         t.append(ft.tag_id)
     return t
 
-def getTag(id):
+def get_tag(id):
     try:
         return StTag.objects.get(id = id)
     except:
         return None
-def allGroup():
+def all_group():
     gs = []
     for tt in StTag.objects.filter(isGroup = True):
         gs.append(tt.id)
     return gs
 
-def getFile(id):
+def get_file(id):
     try:
         return StFile.objects.get(id = id)
     except:
         return None
 
-def newFile(path,name):
-    newF = StFile(path = path , name = name)
+def files_here(owner,path):
+    fh = []
+    for ff in StFile.objects.filter(owner = owner, path = path):
+        fh.append(ff.id)
+    return fh
+
+def new_file(owner, path,name):
+    newF = StFile(owner = owner, path = path , name = name)
     newF.save()
     return newF.id
 
-def newTag(name,isGroup = False):
+def new_tag(name,isGroup = False):
     newT = StTag(name = name, isGroup = isGroup)
     newT.save()
     return newT.id
