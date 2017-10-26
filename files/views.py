@@ -124,7 +124,7 @@ def List(path):
         return False;
     try:
         file_list = os.listdir(path)
-        return True
+        return file_list
     except:
         return False
 
