@@ -7,6 +7,7 @@ from django.shortcuts import render
 import accounts.views
 import setting.views
 import files.views
+import re
 # Those are the views
 
 from django.contrib.auth.models import User, UserGroup, File, FileTag, ErrorInfo
@@ -15,7 +16,7 @@ from django.contrib.auth.models import User, UserGroup, File, FileTag, ErrorInfo
 def P_CreatUser(request):
 	body = request.Post.get('body')
 	data = json.load(body)
-	Flag = accounts.views.createUser(data['username'], data['password'], data['email'])
+	Flag = accounts.views.create_user(data['username'], data['password'], data['email'])
 	#Flag is the id
 	pass
 
@@ -28,7 +29,7 @@ def G_GetUser(request):
 def P_SignupUser(request):
 	body = request.Post.get('body')
 	data = json.load(body)
-	Flag = accounts.views.createUser(data['username'], data['password'], data['email'])
+	Flag = accounts.views.create_user(data['username'], data['password'], data['email'])
 	#Flag is the id
 	pass
 
@@ -38,12 +39,12 @@ def G_LogInUser(request):
 	pass
 	#WRAP : -> NOT FINISH
 
-def G_LogOutUser(request);
+def G_LogOutUser(request):
 	# No Input there
 	pass
 	#WRAP : -> NOT FINISH
 
-def G_GetUserByName(request);
+def G_GetUserByName(request):
 	id = request.Get.get('id')
 	user = accounts.views.getUser(id);
 	pass
@@ -52,7 +53,7 @@ def G_GetUserByName(request);
 def U_UpdateUser(request):
 	id = request.Put.get('id')
 	body = request.Put.get('body')
-	data = json.load(user)
+	data = json.load(body)
 	User = accounts.view.getUser(id)
 	User.username = data['username']
 	User.first_name = data['firstName']
@@ -70,18 +71,19 @@ def D_DeleteUser(request):
 def P_CreateGroup(request):
 	body = request.Post.get('body')
 	data = json.load(body)
-	Flag = files.views.newTag(data['name'], True)
+	Flag = files.views.new_tag(data['name'], isGroup = False)
 	#Group ID
 	pass
 
 def G_GetAllGroup(request):
 	#No input
+	info = files.views.all_Group()
 	pass
 	#WRAP : -> NOT FINISH
 
 def G_GetGroupById(request):
 	id = request.Get.get('id')
-	Flag = files.views.groupMems(id)
+	Flag = setting.views.group_mems(id)
 	#List of user
 	pass
 
@@ -89,12 +91,12 @@ def U_UpdateGroup(request):
 	id = request.Put.get('id')
 	body = request.Put.get('body')
 	data = json.loads(body)
-	Group = files.views.getTag(id)
+	Group = files.views.get_tag(id)
 	Group.name = data['name']
 	Group.save()
 	pass
 
-def D_DeleteGroup(request);
+def D_DeleteGroup(request):
 	id = request.Delete.get('id')
 	pass
 	#WRAP : -> NOT FINISH
@@ -102,8 +104,9 @@ def D_DeleteGroup(request);
 def P_CreateFile(request):
 	body = request.Post.get('body')
 	data = json.loads(body)
-	Flag = file.views.New(data['path'], data['name'])
-	if (!Flag):
+	ID = files.views.new_file(data['path'], data['name'])
+	Flag = files.views.New(data['path'], data['name'])
+	if (Flag == False):
 		#Create fail
 		pass
 	pass
@@ -113,34 +116,61 @@ def G_GetFileByQuery(request):
 	name = request.Get.get('name')
 	tags = request.Get.get('tags')
 	pass
+	#WRAP : -> NOT FINISH
 
 def G_GetFileById(request):
 	id = request.Get.get('id')
+	stFile = files.views.getFile(id)
 	pass
 
 def D_DeleteFile(request):
 	id = request.Delete.get('id')
 	Flag = file.views.Remove(id)
-	if (!Flag):
+	if (Flag == False):
 		#Delete Fail
 		pass
+	#Delete File
+	#Wrap : -> NOT FINISH
 	pass
 
 def P_UploadFile(request):
 	file = request.Post.get('file')
 	path = request.Post.get('Path')
-	Flag = file.views.Save_file(file, path)
-	if (!Flag):
+	Flag = file.views.Upload_file(file, path)
+	if (Flag == False):
 		#Upload Fail
 		pass
-	
 
 def post_Center(request):
+	Path = request.path
 	if request.method == 'POST':
-		P_UploadFile(request)
+		if (Path == '/user'):
+			P_CreatUser(request)
+		if (Path == '/user/signup'):
+			P_SignupUser(request)
+		if (Path == '/group'):
+			P_CreateGroup(request)
+		if (Path == '/file'):
+			P_CreateFile(request)
+		if (Path == '/file/upload'):
+			P_UploadFile(request)
+		pass
 	if request.method == 'GET':
+		if (Path == '/user'):
+			G_GetUser(request)
+		if (Path == '/user/login'):
+			G_LogInUser(request)
+		if (Path == '/user/logout'):
+			G_LogOutUser(request)
+		if (Path == '/group'):
+			G_GetAllGroup(request)
+		if (Path == '/file'):
+			G_GetFileByQuery(request)
+		#Finish ID Check in debug mode
 		pass
 	if request.method == 'PUT':
+		#Finish ID Check in debug mode
 		pass
 	if request.method == 'DELETE':
-		D_DeleteFile(request)
+		#Finish ID Check in debug mode
+		pass
