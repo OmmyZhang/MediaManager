@@ -1,3 +1,6 @@
+from django.test import TestCase
+from files.views import *
+import os
 class SampleTestCase(TestCase):
     def setUp(self):
         pass
@@ -38,3 +41,11 @@ class SampleTestCase(TestCase):
         for ur in groupMems(g1):
             print(getUser(ur).username)
             print(getUser(ur).email)
+    
+    def test_sample2(self):
+        temp_path = "data"
+        new(temp_path,'weijy')
+        self.assertEqual(os.path.exist(os.join(temp_path,'weijy')), True)
+        remove(os.join(temp_path,'weijy'))
+        self.assertEqual(os.path.exist(os.join(temp_path,'weijy')), False)
+

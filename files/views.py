@@ -5,7 +5,6 @@ import os,time
 import re
 from os import path
 from django.http import StreamingHttpResponse
-from .models import FileToTag,StFile,StTag
 # import mimetypes
 # import MimeWriter
 # import mimetools
@@ -92,7 +91,7 @@ def file_iterator(file_name, chunck_size = 512):
                 break
         f.close()
 
-def Remove(path):
+def remove(path):
     if not os.path.exists(path):
         return False;
     if os.path.isfile(path):
@@ -109,7 +108,7 @@ def RM(path, new_path):
     Remove(path)
     return True
 
-def New(path, Name="New_Folder"):
+def new(path, Name="New_Folder"):
     if not os.path.exists(path):
         return False;
     if not os.path.isdir(path):
