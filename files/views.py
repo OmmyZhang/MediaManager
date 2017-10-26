@@ -21,6 +21,15 @@ def Save_file(File, save_path):
         return False;
     return True;
 
+def Download_file(download_path,file_name):
+     download_path = download_path + '/' + file_name;
+     if not os.path.exis(download_path):
+         return False
+     response = StreamingHttpResponse(file_iterator(download_path))
+     response['Content-Type'] = 'application/octet-stream'
+     response['Content-Disposition'] = 'attachment;filename='+file_name
+     return response
+
 
 def createFileToTag(fi,ti): # create a relationship between file and tag
     assert getFile(fi) is not None , "Wrong file id"
@@ -71,16 +80,7 @@ def newTag(name,isGroup = False):
 def file_show(user_name):
     now_user_name = user_name
     file_list = get_list(now_user_name)
-    return file_list
-
-@csrf_exempt 
-def Read_file(download_path):
-    if not os.path.exists(download_path):
-        return False
-    try:
-        return file_terator(download_path)
-    except:
-        return False        
+    return file_list      
     
 def file_iterator(file_name, chunck_size = 512):
     with open(file_name,'rb+') as f:
