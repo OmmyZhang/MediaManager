@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import json
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
+from django.contrib import auth
 
 import accounts.views
 import setting.views
@@ -36,11 +37,14 @@ def P_SignupUser(request):
 def G_LogInUser(request):
 	username = request.Get.get('username')
 	password = request.Get.get('password')
+	user = auth.authenticate(username=username, password=password)
+	if user and user.is_active:
+		auth.login(request, user)
 	pass
 	#WRAP : -> NOT FINISH
 
 def G_LogOutUser(request):
-	# No Input there
+	auth.logout(request)
 	pass
 	#WRAP : -> NOT FINISH
 
@@ -162,15 +166,30 @@ def post_Center(request):
 			G_LogInUser(request)
 		if (Path == '/user/logout'):
 			G_LogOutUser(request)
+		# "/user/id" is not finished, wait for it....
 		if (Path == '/group'):
 			G_GetAllGroup(request)
+		if (Path[0:7] == '/group/'):
+			G_GetGroupById(request)
 		if (Path == '/file'):
 			G_GetFileByQuery(request)
+		if (Path[0:6] == '/file/'):
+			G_GetFileById(request)
 		#Finish ID Check in debug mode
 		pass
 	if request.method == 'PUT':
+		if (Path[0:6] == '/user/'):
+			U_UpdateUser(request)
+		if (Path[0:7] == '/group/'):
+			U_UpdateGroup(request)
 		#Finish ID Check in debug mode
 		pass
 	if request.method == 'DELETE':
+		if (Path[0:6] == '/user/'):
+			D_DeleteUser(request)
+		if (Path[0:7] == '/group/'):
+			D_DeleteGroup(request)
+		if (Path[0:6] == '/file/'):
+			D_DeleteFile(request)
 		#Finish ID Check in debug mode
 		pass
