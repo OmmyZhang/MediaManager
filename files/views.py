@@ -79,41 +79,7 @@ def Download_file(download_path,file_name):
      response['Content-Type'] = 'application/octet-stream'
      response['Content-Disposition'] = 'attachment;filename='+file_name
      return response
-
-@csrf_exempt
-def Save_file(File, save_path):
-    if not os.path.exists(save_path):
-        return False;
-    try:
-        destination = open(save_path,'wb+')
-        for chunk in File.chunks():
-            destination.write(chunk)
-        destination.close()
-    except:
-        return False;
-    return True;
-
-def get_list(user_name):
-    path = "data/" + user_name
-    answer = []
-    for root,dirs,files in os.walk(path):
-        answer = files
-    return answer
-
-def file_show(user_name):
-    now_user_name = user_name
-    file_list = get_list(now_user_name)
-    return file_list
-
-@csrf_exempt 
-def Read_file(download_path):
-    if not os.path.exists(download_path):
-        return False
-    try:
-        return file_terator(download_path)
-    except:
-        return False        
-    
+         
 def file_iterator(file_name, chunck_size = 512):
     with open(file_name,'rb+') as f:
         while True:
@@ -153,3 +119,4 @@ def new(path, Name="New_Folder"):
         return True
     except:
         return False
+
