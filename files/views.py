@@ -101,7 +101,7 @@ def remove(path):
         os.rmdir(path)
         return True
 
-def RM(path, new_path):
+def rm(path, new_path):
     if not os.path.exists(path):
         return False;
     os.system("mv %s %s"%(path,new_path))
@@ -119,7 +119,7 @@ def new(path, Name="New_Folder"):
     except:
         return False
 
-def List(path):
+def list(path):
     if not os.path.exists(path) or not os.path.isdir(path):
         return False;
     try:
