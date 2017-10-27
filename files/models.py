@@ -17,10 +17,11 @@ class StTag(models.Model):
         return (str(self.id) + ' is ' +self.name)#.encode('utf-8')
 
 class StFile(models.Model):
+    owner= models.IntegerField(default = -1)
     path = models.CharField(max_length = 200) 
     name = models.CharField(max_length = 100)
     def __str__(self):
-        return (str(self.id) + ' is ' + self.path + self.name)#.encode('utf-8')
+        return (str(self.owner) + '\'s. ' + str(self.id) + ' is ' + self.path + self.name)#.encode('utf-8')
     
 
 

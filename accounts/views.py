@@ -7,7 +7,7 @@ import os,time
 # Create your views here.
 
 
-def createUser(username,passwd,email):
+def create_user(username,passwd,email):
     newM = User.objects.create_user(username,email,passwd)
     newM.save()
     
@@ -15,7 +15,7 @@ def createUser(username,passwd,email):
     
     return newM.id #user_id
 
-def getUser(id):
+def get_user(id):
     try:
         return User.objects.get(id = id)
     except:
