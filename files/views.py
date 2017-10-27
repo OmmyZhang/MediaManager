@@ -3,22 +3,23 @@ from django.http import HttpResponseRedirect,HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import os,time
 import re
+import shutil
 from os import path
 from django.http import StreamingHttpResponse
 # import mimetypes
 # import MimeWriter
 # import mimetools
-def Save_file(File, save_path):
-    if not os.path.exists(save_path):
-        return False;
-    try:
-        destination = open(save_path,'wb+')
-        for chunk in File.chunks():
-            destination.write(chunk)
-        destination.close()
-    except:
-        return False;
-    return True;
+#def Save_file(File, save_path):
+#    if not os.path.exists(save_path):
+#        return False;
+#    try:
+#        destination = open(save_path,'wb+')
+#        for chunk in File.chunks():
+#            destination.write(chunk)
+#        destination.close()
+#    except:
+#        return False;
+#    return True;
 
 def Download_file(download_path,file_name):
      download_path = download_path + '/' + file_name;
@@ -98,14 +99,16 @@ def remove(path):
         os.remove(path)
         return True
     if os.path.isdir(path):
-        os.rmdir(path)
+        shutil.rmtree(path)
         return True
 
 def rm(path, new_path):
+    return copy(path,new_path) and remove(path)
+
+def copy(path, new_path):
     if not os.path.exists(path):
         return False;
     os.system("mv %s %s"%(path,new_path))
-    Remove(path)
     return True
 
 def new(path, Name="New_Folder"):

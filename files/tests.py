@@ -1,10 +1,11 @@
 from django.test import TestCase
-from files.views import *
+from files.views import new,remove,list,rm
 import os
 class SampleTestCase(TestCase):
     def setUp(self):
         pass
 
+    ''' 
     def test_sample1(self):
         """Just a sample test"""
        
@@ -41,11 +42,37 @@ class SampleTestCase(TestCase):
         for ur in groupMems(g1):
             print(getUser(ur).username)
             print(getUser(ur).email)
+     '''
     
-    def test_sample2(self):
-        temp_path = "data"
+    def test_sample2(self): #Test for making new dir and delete a simple dir, copy a simple file
+        temp_path = "files/data"
+        temp_file = "files/data/test/loss.py"
+
         new(temp_path,'weijy')
-        self.assertEqual(os.path.exist(os.join(temp_path,'weijy')), True)
-        remove(os.join(temp_path,'weijy'))
-        self.assertEqual(os.path.exist(os.join(temp_path,'weijy')), False)
+        new_path = os.path.join(temp_path,'weijy')
+        print("create new path:  %s"%new_path)
+        self.assertEqual(os.path.exists(new_path), True)
+        
+        remove(new_path)
+        print("remove path: %s"%new_path)
+        self.assertEqual(os.path.exists(new_path), False)
+    
+        self.assertEqual(os.path.exists(temp_file),True)
+        remove(temp_file)
+        print("remove file: %s"%temp_file)
+        self.assertEqual(os.path.exists(temp_file),False)
+
+    def test_sample3(self): #Test for listing and removing a comlex dir
+        temp_path = "files/data/complex"
+
+        print("List the complex dir: ")
+        file_name = list(temp_path)
+        for item in file_name:
+            print(item)
+
+        self.assertEqual(os.path.exists(temp_path), True)
+        remove(temp_path)
+        print("remove complex path: %s"%temp_path)
+        self.assertEqual(os.path.exists(temp_path),False)
+
 
