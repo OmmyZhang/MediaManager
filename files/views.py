@@ -102,7 +102,7 @@ def remove(path):
         shutil.rmtree(path)
         return True
 
-def rm(path, new_path):
+def mv(path, new_path):
     return copy(path,new_path) and remove(path)
 
 def copy(path, new_path):
@@ -122,12 +122,12 @@ def new(path, Name="New_Folder"):
     except:
         return False
 
-def list(path):
-    if not os.path.exists(path) or not os.path.isdir(path):
-        return False;
-    try:
-        file_list = os.listdir(path)
-        return file_list
-    except:
-        return False
+#def list(path):
+#    if not os.path.exists(path) or not os.path.isdir(path):
+#        return False;
+#    try:
+#        file_list = os.listdir(path)
+#        return file_list
+#    except:
+#        return False
 

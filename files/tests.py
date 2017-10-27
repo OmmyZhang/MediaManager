@@ -1,5 +1,6 @@
 from django.test import TestCase
-from files.views import new,remove,list,rm
+from files.views import new,remove,mv,copy
+
 import os
 class SampleTestCase(TestCase):
     def setUp(self):
@@ -43,13 +44,23 @@ class SampleTestCase(TestCase):
             print(getUser(ur).username)
             print(getUser(ur).email)
      '''
-    
-    def test_sample2(self): #Test for making new dir and delete a simple dir, copy a simple file
-        temp_path = "files/data"
-        temp_file = "files/data/test/loss.py"
+    def copy_delete_file_test(self):
+        src_file = "data/loss.py"
+        temp_file = "data/test/loss.py"
+        self.assertEqual(os.path.exists(temp_file),False)
+        copy(src_file,temp_file)
 
-        new(temp_path,'weijy')
-        new_path = os.path.join(temp_path,'weijy')
+        self.assertEqual(os.path.exists(temp_file),True)
+        remove(temp_file)
+        print("remove file: %s"%temp_file)
+        self.assertEqual(os.path.exists(temp_file),False)
+
+    def new_delete_mir_test(self): #Test for making new dir and delete a simple dir, copy a simple file
+        root_path = "data"
+        folder_name = "weijy_test"
+
+        new(root_path,test_folder_name)
+        new_path = os.path.join(root_path,folder_name)
         print("create new path:  %s"%new_path)
         self.assertEqual(os.path.exists(new_path), True)
         
@@ -57,19 +68,9 @@ class SampleTestCase(TestCase):
         print("remove path: %s"%new_path)
         self.assertEqual(os.path.exists(new_path), False)
     
-        self.assertEqual(os.path.exists(temp_file),True)
-        remove(temp_file)
-        print("remove file: %s"%temp_file)
-        self.assertEqual(os.path.exists(temp_file),False)
-
-    def test_sample3(self): #Test for listing and removing a comlex dir
+    def (self): #Test for listing and removing a comlex dir
+        
         temp_path = "files/data/complex"
-
-        print("List the complex dir: ")
-        file_name = list(temp_path)
-        for item in file_name:
-            print(item)
-
         self.assertEqual(os.path.exists(temp_path), True)
         remove(temp_path)
         print("remove complex path: %s"%temp_path)
