@@ -1,7 +1,7 @@
 #-*-coding:UTF-8-*-
 from django.http import HttpResponseRedirect,HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-import os,time
+import os,time,shutil
 import re
 import shutil
 from os import path
@@ -100,13 +100,37 @@ def remove(path):
         shutil.rmtree(path)
         return True
 
-def mv(path, new_path):
-    return copy(path,new_path) and remove(path)
-
-def copy(path, new_path):
+def rename(path, new_name):
     if not os.path.exists(path):
+        return False
+    try:
+        dirname = os.path.dirname(path)
+        new_path = os.path.join(dirname,new_name)
+        os.system("mv %s %s"%(path,new_path))
+    except:
+        return False
+    return True
+
+def move(src, dst_path):
+    if not os.path.exists(src):
+        return False
+    try:
+        filename = os.path.basename(src)
+        dst = os.path.join(dst_path,filename)
+        os.system("mv %s %s"%(src,dst))
+    except:
+        return False
+    return True
+
+def copy(src, dst_path):
+    if not os.path.exists(src):
         return False;
-    os.system("mv %s %s"%(path,new_path))
+    try:
+        filename = os.path.basename(src)
+        dst = os.path.join(dst_path,filename)
+        shutil.copy(src,dst)
+    except:
+        return False
     return True
 
 def new(path, Name="New_Folder"):

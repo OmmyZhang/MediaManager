@@ -2,11 +2,12 @@ from django.test import TestCase
 from files.views import *
 from setting.views import *
 from accounts.views import *
+from files.views import remove,rename,move,copy,new
 import os
 class SampleTestCase(TestCase):
     def setUp(self):
         pass
-
+    
     def test_sample1(self):
         """Just a sample test"""
         usr = create_user('用户1','passwd','1@1.com')
@@ -55,29 +56,50 @@ class SampleTestCase(TestCase):
         
         print(files_here(usr,'/photo/'))
     
-    def test_sample2(self): #Test for making new dir and delete a simple dir, copy a simple file
-        temp_path = "data"
-        temp_file = "data/test/loss.py"
 
-        new(temp_path,'weijy')
-        new_path = os.path.join(temp_path,'weijy')
-        print("create new path:  %s"%new_path)
-        self.assertEqual(os.path.exists(new_path), True)
-        
-        remove(new_path)
-        print("remove path: %s"%new_path)
-        self.assertEqual(os.path.exists(new_path), False)
+    def test_mkdir(self):
+        src = "data/debug"
+        name = "test"
+        new_path = "data/debug/test"
+        self.assertEqual(os.path.exists(new_path),False)
+        self.assertEqual(new(src,name), True)
+        self.assertEqual(os.path.exists(new_path),True)
+
+    def test_copy(self):
+        src = "data/Debug.py"
+        dst_path = "data/debug"
+        dst = "data/debug/Debug.py"
+        self.assertEqual(os.path.exists(dst),False)
+        self.assertEqual(copy(src,dst_path),True)
+        self.assertEqual(os.path.exists(dst),True)
+
+    def test_rename(self):
+        src = "data/weijy2/1.docx"
+        new_name = "2.docx"
+        new_path = "data/debug/2.docx"
+        if not os.path.exists(src):
+            src = "data/weijy2/2.docx"
+            new_name = "1.docx"
+            new_path = "data/debug/1.docx"
+
+        self.assertEqual(os.path.exists(new_path),False)
+        self.assertEqual(rename(src,new_name),True)
+        self.assertEqual(os.path.exists(new_path),True)
     
-        self.assertEqual(os.path.exists(temp_file),True)
-        remove(temp_file)
-        print("remove file: %s"%temp_file)
-        self.assertEqual(os.path.exists(temp_file),False)
+    def test_move(self):
+        src= "data/debug/Debug.py"
+        dst_path = "data/debug/test"
+                
+        new_path = os.path.join(dst_path, os.path.basename(src))
+        self.assertEqual(os.path.exists(new_path), False)
+        self.assertEqual(os.path.exists(src),True)
+        self.assertEqual(move(src, dst_path), True)
+        self.assertEqual(os.path.exists(new_path),True)
+        self.assertEqual(os.path.exists(src),False)
+    
+    def test_remove(self):
+        src = "data/debug/test"
+        self.assertEqual(os.path.exists(src),True)
+        self.assertEqual(remove(src),True)
+        self.assertEqual(os.path.exists(src),False)
 
-    def test_sample3(self): #Test  removing a comlex dir
-        temp_path = "data/complex"
-
-
-        self.assertEqual(os.path.exists(temp_path), True)
-        remove(temp_path)
-        print("remove complex path: %s"%temp_path)
-        self.assertEqual(os.path.exists(temp_path),False)
