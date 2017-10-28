@@ -133,13 +133,13 @@ def copy(src, dst_path):
         return False
     return True
 
-def new(path, Name="New_Folder"):
+def new(path, name="New_Folder"):
     if not os.path.exists(path):
         return False;
     if not os.path.isdir(path):
         return False;
     try:
-        os.mkdir(path + "/" + Name)
+        os.mkdir(path + "/" + name)
         return True
     except:
         return False

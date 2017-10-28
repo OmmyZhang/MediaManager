@@ -74,13 +74,14 @@ class SampleTestCase(TestCase):
         self.assertEqual(os.path.exists(dst),True)
 
     def test_rename(self):
-        src = "data/weijy2/1.docx"
+        src = "data/debug/1.docx"
         new_name = "2.docx"
         new_path = "data/debug/2.docx"
         if not os.path.exists(src):
-            src = "data/weijy2/2.docx"
+            src = "data/debug/2.docx"
             new_name = "1.docx"
             new_path = "data/debug/1.docx"
+        print("src is ---------------------------->%s"%src)
 
         self.assertEqual(os.path.exists(new_path),False)
         self.assertEqual(rename(src,new_name),True)
