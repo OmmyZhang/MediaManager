@@ -11,7 +11,8 @@ import files.views
 import re
 # Those are the views
 
-from django.contrib.auth.models import User, UserGroup, File, FileTag, ErrorInfo
+from django.contrib.auth.models import User#, ErrorInfo
+#from files.models import 
 
 
 # Those are the models
@@ -75,12 +76,19 @@ def P_CreatUser(request):
 
 
 def G_GetUser(request):
-    name = request.Get.get('name')
-    group = request.Get.get('group')
+    try:
+        name = request.Get.get('name')
+    except:
+        name = ''
+    try:
+        group = request.Get.get('group')
+    except:
+        group = -1
+    print('!!',name,group)
     # Now we find user in group
-    UserList = setting.views.group_mems(group)
+    userList = setting.views.group_mems(group)
     response_data = []
-    for i in UserList:
+    for i in userList:
         User = accounts.views.get_user(i)
         UserJson = createNullUser()
         UserJson['id'] = i
@@ -91,7 +99,6 @@ def G_GetUser(request):
         UserJson['password'] = User.password
         response_data.append(UserJson)
     return HttpResponse(json.dumps(response_data), content_type="application/json")
-    pass
 
 
 # WRAP : -> NOT FINISH
@@ -289,8 +296,11 @@ def DownloadFile(request, idstr):
     return response
 
 
-def post_Center(request):
+def post_center(request):
     Path = request.path
+    Path = Path[4:]
+    Path = Path[:-1]
+
     if request.method == 'POST':
         if (Path == '/user'):
             P_CreatUser(request)
