@@ -1,14 +1,13 @@
-#encoding:utf-8
 from django.test import TestCase
-from .views import *
-from accounts.views import *
+from files.views import *
 from setting.views import *
-# Create your tests here.
-
+from accounts.views import *
+from files.views import remove,rename,move,copy,new
+import os
 class SampleTestCase(TestCase):
     def setUp(self):
         pass
-
+    
     def test_sample1(self):
         """Just a sample test"""
         usr = create_user('用户1','passwd','1@1.com')
@@ -51,4 +50,57 @@ class SampleTestCase(TestCase):
         for gg in all_group():
             print('group:',get_tag(gg))
 
+        for ur in group_mems(g1):
+            print(get_user(ur).username)
+            print(get_user(ur).email)
+        
         print(files_here(usr,'/photo/'))
+    
+
+    def test_mkdir(self):
+        src = "data/debug"
+        name = "test"
+        new_path = "data/debug/test"
+        self.assertEqual(os.path.exists(new_path),False)
+        self.assertEqual(new(src,name), True)
+        self.assertEqual(os.path.exists(new_path),True)
+
+    def test_copy(self):
+        src = "data/Debug.py"
+        dst_path = "data/debug"
+        dst = "data/debug/Debug.py"
+        self.assertEqual(os.path.exists(dst),False)
+        self.assertEqual(copy(src,dst_path),True)
+        self.assertEqual(os.path.exists(dst),True)
+
+    def test_rename(self):
+        src = "data/debug/1.docx"
+        new_name = "2.docx"
+        new_path = "data/debug/2.docx"
+        if not os.path.exists(src):
+            src = "data/debug/2.docx"
+            new_name = "1.docx"
+            new_path = "data/debug/1.docx"
+        print("src is ---------------------------->%s"%src)
+
+        self.assertEqual(os.path.exists(new_path),False)
+        self.assertEqual(rename(src,new_name),True)
+        self.assertEqual(os.path.exists(new_path),True)
+    
+    def test_move(self):
+        src= "data/debug/Debug.py"
+        dst_path = "data/debug/test"
+                
+        new_path = os.path.join(dst_path, os.path.basename(src))
+        self.assertEqual(os.path.exists(new_path), False)
+        self.assertEqual(os.path.exists(src),True)
+        self.assertEqual(move(src, dst_path), True)
+        self.assertEqual(os.path.exists(new_path),True)
+        self.assertEqual(os.path.exists(src),False)
+    
+    def test_remove(self):
+        src = "data/debug/test"
+        self.assertEqual(os.path.exists(src),True)
+        self.assertEqual(remove(src),True)
+        self.assertEqual(os.path.exists(src),False)
+

@@ -1,28 +1,12 @@
 #-*-coding:UTF-8-*-
 from django.http import HttpResponseRedirect,HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-import os,time
+import os,time,shutil
 import re
+import shutil
 from os import path
 from django.http import StreamingHttpResponse
 from .models import FileToTag,StFile,StTag
-# import mimetypes
-# import MimeWriter
-# import mimetools
-
-# Create your views here.
-@csrf_exempt
-def Save_file(File, save_path):
-    if not os.path.exists(save_path):
-        return False;
-    try:
-        destination = open(save_path,'wb+')
-        for chunk in File.chunks():
-            destination.write(chunk)
-        destination.close()
-    except:
-        return False;
-    return True;
 
 def create_FileToTag(fi,ti): # create a relationship between file and tag
     assert get_file(fi) is not None , "Wrong file id"
@@ -81,31 +65,21 @@ def new_tag(name,isGroup = False):
     newT.save()
     return newT.id
 
-        
-#------------------------------------------------------------------------
-
-
-def get_list(user_name):
-    path = "data/" + user_name
-    answer = []
-    for root,dirs,files in os.walk(path):
-        answer = files
-    return answer
-
 def file_show(user_name):
     now_user_name = user_name
     file_list = get_list(now_user_name)
-    return file_list
-
-@csrf_exempt 
-def Read_file(download_path):
-    if not os.path.exists(download_path):
-        return False
-    try:
-        return file_terator(download_path)
-    except:
-        return False        
-    
+    return file_list      
+        
+#------------------------------------------------------------------------
+def Download_file(download_path,file_name):
+     download_path = download_path + '/' + file_name;
+     if not os.path.exis(download_path):
+         return False
+     response = StreamingHttpResponse(file_iterator(download_path))
+     response['Content-Type'] = 'application/octet-stream'
+     response['Content-Disposition'] = 'attachment;filename='+file_name
+     return response
+         
 def file_iterator(file_name, chunck_size = 512):
     with open(file_name,'rb+') as f:
         while True:
@@ -116,30 +90,57 @@ def file_iterator(file_name, chunck_size = 512):
                 break
         f.close()
 
-def Remove(path):
+def remove(path):
     if not os.path.exists(path):
         return False;
     if os.path.isfile(path):
         os.remove(path)
         return True
     if os.path.isdir(path):
-        os.rmdir(path)
+        shutil.rmtree(path)
         return True
 
-def RM(path, new_path):
+def rename(path, new_name):
     if not os.path.exists(path):
-        return False;
-    os.system("mv %s %s"%(path,new_path))
-    Remove(path)
+        return False
+    try:
+        dirname = os.path.dirname(path)
+        new_path = os.path.join(dirname,new_name)
+        os.system("mv %s %s"%(path,new_path))
+    except:
+        return False
     return True
 
-def New(path, Name="New_Folder"):
+def move(src, dst_path):
+    if not os.path.exists(src):
+        return False
+    try:
+        filename = os.path.basename(src)
+        dst = os.path.join(dst_path,filename)
+        os.system("mv %s %s"%(src,dst))
+    except:
+        return False
+    return True
+
+def copy(src, dst_path):
+    if not os.path.exists(src):
+        return False;
+    try:
+        filename = os.path.basename(src)
+        dst = os.path.join(dst_path,filename)
+        shutil.copy(src,dst)
+    except:
+        return False
+    return True
+
+def new(path, name="New_Folder"):
     if not os.path.exists(path):
         return False;
     if not os.path.isdir(path):
         return False;
     try:
-        os.mkdir(path + "/" + Name)
+        os.mkdir(path + "/" + name)
         return True
     except:
         return False
+
