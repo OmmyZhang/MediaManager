@@ -223,9 +223,36 @@ def P_UploadFile(request):
 	file = request.Post.get('file')
 	path = request.Post.get('Path')
 	Flag = file.views.Upload_file(file, path)
-	if (Flag == False):
-		#Upload Fail
-		pass
+	
+	now_user_name = request.user.username
+    list = file_show(now_user_name)
+    error = ''
+    if request.method == "POST":
+        now_user_name = request.user.username
+        File = request.FILES.get("Upload_file",None)
+        
+        if not File:
+            error = "no upload file"
+        else:
+            des_path = "data/" + now_user_name + "/" + File.name
+            #We need to create a temp path
+            destination = open(des_path,'wb+')
+            for chunk in File.chunks():
+                destination.write(chunk)
+            destination.close()
+        
+        list = file_show(now_user_name)
+    #NEED TO REWRITE AND DEBUG
+	pass
+
+def DownloadFile(request):
+    now_user_name = request.user.username
+    file_name = request.POST.get('name')
+    file_path = "data/" + now_user_name + "/" + file_name
+    response = StreamingHttpResponse(file_iterator(file_path))
+    response['Content-Type'] = 'application/octet-stream'
+    response['Content-Disposition'] = 'attachment;filename={0}'.format(file_name.encode('utf8')) 
+    return response
 
 def post_Center(request):
 	Path = request.path
