@@ -14,6 +14,52 @@ import re
 from django.contrib.auth.models import User, UserGroup, File, FileTag, ErrorInfo
 # Those are the models
 
+def getNullErrorInfo():
+	response_data = {}
+	response_data['info'] = 'NULL'
+	return response_data
+
+def getNullFileTag():
+	response_data = {}
+	response_data['id'] = 0
+	response_data['name'] = 'NULL'
+	response_data['color'] = 'NULL'
+	return response_data
+
+def getNullUserGroup():
+	response_data = {}
+	response_data['id'] = 0
+	response_data['name'] = 'NULL'
+	return response_data
+
+def getNullFile():
+	response_data = {}
+	response_data['id'] = 'NULL'
+	response_data['isDir'] = false
+	response_data['path'] = 'NULL'
+	response_data['url'] = 'NULL'
+	response_data['md5'] = 'NULL'
+	response_data['thumbnails'] = 'NULL'
+	response_data['size'] = 0
+	response_data['modifyDate'] = '2000-1-1 0:0:0'
+	response_data['createDate'] = '2000-1-1 0:0:0'
+	response_data['tags'] = getNullFileTag()
+	return response_data
+
+def getNullUser():
+	response_data = {}
+	response_data['id'] = 0
+	response_data['username'] = 'NULL'
+	response_data['password'] = 'NULL'
+	response_data['firstName'] = 'NULL'
+	response_data['lastName'] = 'NULL'
+	response_data['email'] = 'NULL'
+	response_data['phone'] = 'NULL'
+	response_data['image'] = 'NULL'
+	response_data['groups'] = getNullGroup()
+	return response_data
+	
+
 def P_CreatUser(request):
 	body = request.Post.get('body')
 	data = json.load(body)
@@ -166,7 +212,10 @@ def post_Center(request):
 			G_LogInUser(request)
 		if (Path == '/user/logout'):
 			G_LogOutUser(request)
-		# "/user/id" is not finished, wait for it....
+		if (len(Path) > 6):
+			if (Path[0:6] == '/user/') & (Path[6] >= '0') & (Path[6] <= '9'):
+				G_GetUserName(request)
+		#This is not halal, but we can use it first.
 		if (Path == '/group'):
 			G_GetAllGroup(request)
 		if (Path[0:7] == '/group/'):
@@ -175,14 +224,12 @@ def post_Center(request):
 			G_GetFileByQuery(request)
 		if (Path[0:6] == '/file/'):
 			G_GetFileById(request)
-		#Finish ID Check in debug mode
 		pass
 	if request.method == 'PUT':
 		if (Path[0:6] == '/user/'):
 			U_UpdateUser(request)
 		if (Path[0:7] == '/group/'):
 			U_UpdateGroup(request)
-		#Finish ID Check in debug mode
 		pass
 	if request.method == 'DELETE':
 		if (Path[0:6] == '/user/'):
@@ -191,5 +238,4 @@ def post_Center(request):
 			D_DeleteGroup(request)
 		if (Path[0:6] == '/file/'):
 			D_DeleteFile(request)
-		#Finish ID Check in debug mode
 		pass
