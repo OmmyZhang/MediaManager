@@ -70,6 +70,20 @@ def P_CreatUser(request):
 def G_GetUser(request):
 	name = request.Get.get('name')
 	group = request.Get.get('group')
+	#Now we find user in group
+	UserList = setting.views.group_mems(group)
+	response_data = []
+	for i in UserList:
+		User = accounts.views.get_user(i)
+		UserJson = createNullUser()
+		UserJson['id'] = i
+		UserJson['username'] = User.username
+		UserJson['firstName'] = User.first_name
+		UserJson['lastName'] = User.last_name
+		UserJson['email'] = User.email
+		UserJson['password'] = User.password
+		response_data.append(UserJson)
+	return HttpResponse(json.dumps(response_data), content_type="application/json")
 	pass
 	#WRAP : -> NOT FINISH
 
@@ -96,7 +110,16 @@ def G_LogOutUser(request):
 
 def G_GetUserByName(request):
 	id = request.Get.get('id')
-	user = accounts.views.getUser(id);
+	user = accounts.views.getUser(id)
+	response_data = creatNullUser()
+	User = accounts.views.get_user(user)
+	response_data['id'] = id
+	response_data['username'] = User.username
+	response_data['firstName'] = User.first_name
+	response_data['lastName'] = User.last_name
+	response_data['email'] = User.email
+	response_data['password'] = User.password
+	return HttpResponse(json.dumps(response_data), content_type="application/json")
 	pass
 	#WRAP : -> NOT FINISH
 
@@ -127,14 +150,25 @@ def P_CreateGroup(request):
 
 def G_GetAllGroup(request):
 	#No input
+	response_data = []
 	info = files.views.all_Group()
+	for i in info:
+		Group = files.views.get_tag(i)
+		GroupJson = createNullGroup()
+		GroupJson['id'] = i
+		GroupJson['name'] = Group.name	
+		response_data.append(GroupJson)
+	return HttpResponse(json.dumps(response_data), content_type="application/json")
 	pass
 	#WRAP : -> NOT FINISH
 
 def G_GetGroupById(request):
 	id = request.Get.get('id')
-	Flag = setting.views.group_mems(id)
-	#List of user
+	response_data = {}
+	Group = files.views.get_tag(i)
+	response_data['id'] = id
+	response_data['name'] = Group.name
+	return HttpResponse(json.dumps(response_data), content_type="application/json")
 	pass
 
 def U_UpdateGroup(request):
@@ -165,6 +199,8 @@ def G_GetFileByQuery(request):
 	path = request.Get.get('path')
 	name = request.Get.get('name')
 	tags = request.Get.get('tags')
+	#So we use path first
+	
 	pass
 	#WRAP : -> NOT FINISH
 
