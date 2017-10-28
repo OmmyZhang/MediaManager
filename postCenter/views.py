@@ -84,7 +84,6 @@ def G_GetUser(request):
         group = request.Get.get('group')
     except:
         group = -1
-    print('!!',name,group)
     # Now we find user in group
     userList = setting.views.group_mems(group)
     response_data = []
@@ -98,6 +97,7 @@ def G_GetUser(request):
         UserJson['email'] = User.email
         UserJson['password'] = User.password
         response_data.append(UserJson)
+    print(response_data)
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
@@ -112,12 +112,13 @@ def P_SignupUser(request):
 
 
 def G_LogInUser(request):
-    username = request.Get.get('username')
-    password = request.Get.get('password')
+    username = request.GET.get('username')
+    password = request.GET.get('password')
     user = auth.authenticate(username=username, password=password)
     if user and user.is_active:
         auth.login(request, user)
-    pass
+        return HttpResponse('S')
+    return HttpResponse('F')
 
 
 # WRAP : -> NOT FINISH
@@ -303,47 +304,46 @@ def post_center(request):
 
     if request.method == 'POST':
         if (Path == '/user'):
-            P_CreatUser(request)
+            return P_CreatUser(request)
         if (Path == '/user/signup'):
-            P_SignupUser(request)
+            return P_SignupUser(request)
         if (Path == '/group'):
-            P_CreateGroup(request)
+            return P_CreateGroup(request)
         if (Path == '/file'):
-            P_CreateFile(request)
+            return P_CreateFile(request)
         if (Path == '/file/upload'):
-            P_UploadFile(request)
+            return P_UploadFile(request)
         pass
     if request.method == 'GET':
         if (Path == '/user'):
-            G_GetUser(request)
+            return G_GetUser(request)
         if (Path == '/user/login'):
-            G_LogInUser(request)
+            return G_LogInUser(request)
         if (Path == '/user/logout'):
-            G_LogOutUser(request)
+            return G_LogOutUser(request)
         if (len(Path) > 6):
             if (Path[0:6] == '/user/') & (Path[6] >= '0') & (Path[6] <= '9'):
-                G_GetUserByName(request, Path[6:])
+                return G_GetUserByName(request, Path[6:])
         # This is not halal, but we can use it first.
         if (Path == '/group'):
-            G_GetAllGroup(request)
+            return G_GetAllGroup(request)
         if (Path[0:7] == '/group/'):
-            G_GetGroupById(request, Path[7:])
+            return G_GetGroupById(request, Path[7:])
         if (Path == '/file'):
-            G_GetFileByQuery(request)
+            return G_GetFileByQuery(request)
         if (Path[0:6] == '/file/'):
-            G_GetFileById(request, Path[6:])
-        pass
+            return G_GetFileById(request, Path[6:])
     if request.method == 'PUT':
         if (Path[0:6] == '/user/'):
-            U_UpdateUser(request, Path[6:])
+            return U_UpdateUser(request, Path[6:])
         if (Path[0:7] == '/group/'):
-            U_UpdateGroup(request, Path[7:])
+            return U_UpdateGroup(request, Path[7:])
         pass
     if request.method == 'DELETE':
         if (Path[0:6] == '/user/'):
-            D_DeleteUser(request, Path[6:])
+            return D_DeleteUser(request, Path[6:])
         if (Path[0:7] == '/group/'):
-            D_DeleteGroup(request, Path[7:])
+            return D_DeleteGroup(request, Path[7:])
         if (Path[0:6] == '/file/'):
-            D_DeleteFile(request, Path[6:])
-        pass
+            return D_DeleteFile(request, Path[6:])
+    return HttpResponse('wrong API!')
