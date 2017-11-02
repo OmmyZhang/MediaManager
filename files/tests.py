@@ -10,7 +10,11 @@ class SampleTestCase(TestCase):
     
     def test_sample1(self):
         """Just a sample test"""
-        usr = create_user('用户1','passwd','1@1.com')
+        usr = create_user({
+            "username":'用户1',
+            "password":'passwd',
+            "email":'1@1.com'
+            })
        
         f1 = new_file(usr,'/photo/','1.png')
         f2 = new_file(usr,'/photo/','2.png')
@@ -37,7 +41,11 @@ class SampleTestCase(TestCase):
         uu.username = 'user1'
         uu.save()
 
-        usr2 = create_user('用户2','passwd','1@2.com')
+        usr2 = create_user({
+            "username":'用户2',
+            "password":'passwd',
+            "email":'1@2.com'
+            })
 
         create_Belong(usr2,g1)
         print(group_mems(g1))
@@ -56,7 +64,7 @@ class SampleTestCase(TestCase):
         
         print(files_here(usr,'/photo/'))
     
-
+    '''
     def test_mkdir(self):
         src = "data/debug"
         name = "test"
@@ -103,4 +111,4 @@ class SampleTestCase(TestCase):
         self.assertEqual(os.path.exists(src),True)
         self.assertEqual(remove(src),True)
         self.assertEqual(os.path.exists(src),False)
-
+    '''

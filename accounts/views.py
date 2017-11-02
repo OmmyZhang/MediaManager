@@ -27,14 +27,17 @@ class OneUser(APIView):
     def post(self, request, format=None):
         body = request.POST
         print(request.POST)
-        uid = create_user(
-                body['username'],
-                body['passwprd'],
-                body['email']
-                )
+        uid = create_user(body)
         for g in body[groups]:
             create_Belong(uid,g['id'])
-        return Response(status=status.HTTP_201_CREATED) 
+        return Response(status=status.HTTP_201_CREATED)
+
+class SignUp(APIView):
+    def post(self, request, format=None):
+        body = request.POST
+        creat_user(body)
+        return Response(status=status.HTTP_201_CREATED)
+
 
 def formate_user(id):
     u = get_user(id)
@@ -53,8 +56,12 @@ def formate_user(id):
     else:
         return None
 
-def create_user(username,passwd,email):
-    newM = User.objects.create_user(username,email,passwd)
+def create_user(info):
+    newM = User.objects.create_user(
+                info['username'],
+                info['password'],
+                info['email']
+                )
     newM.save()
     
     #os.makedirs('data/'+nam)
