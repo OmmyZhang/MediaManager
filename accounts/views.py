@@ -8,41 +8,47 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from setting.views import user_groups,group_mems,create_Belong
-
+from files.views import get_tag
 
 # Create your views here.
 
 class OneUser(APIView):
     def get(self, request, format=None):
-        if 'name' in request.GET:
-            name = request.GET['name']
+        get = request.GET
+        if 'name' in get:
+            name = get['name']
             users = regex_user(name)
-        elif 'group' in request.GET:
-            group = request.GET['group']
+        elif 'group' in get:
+            group = get['group']
             users = group_mems(int(group))
         else:
-            return Response({"info": "no name and no group"},status=status.HTTP_400_BAD_REQUEST)
+            return Response({"info": "no name and no group"},
+                    status=status.HTTP_400_BAD_REQUEST)
         return Response([formate_user(i) for i in users])
     
     def post(self, request, format=None):
-        body = request.POST
-        print(request.POST)
-        uid = create_user(body)
-        for g in body[groups]:
-            create_Belong(uid,g['id'])
-        return Response(status=status.HTTP_201_CREATED)
+        body = request.data
+        try:
+            uid = create_user(body)
+            for g in body['groups']:
+                create_Belong(uid,g['id'])
+            return Response(status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response(str(e.message),status=status.HTTP_400_BAD_REQUEST)
 
-def signup_view(request):
-    body = request.POST
-    uid = creat_user(body)
-    try:
-        login(request,get_user(uid))
-        return Response(status=status.HTTP_201_CREATED)
-    except:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-def login_view(request):
+class Signup(APIView):
+    def post(self, request, format=None):
         body = request.POST
+        try:
+            uid = creat_user(body)
+            login(request,get_user(uid))
+            return Response(status=status.HTTP_201_CREATED)
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class Login(APIView):
+    def post(self, request, format=None):
+        body = request.data
         name   = body['username']
         passwd = body['password']
         user = authenticate(username=name,password=passwd)
@@ -66,7 +72,7 @@ def formate_user(id):
                 "email": u.email,
                 "phone": "string",
                 "image": "string",
-                "groups": user_groups(u.id),
+                "groups": [ {"id":gid,"name":get_tag(gid).name} for gid in user_groups(u.id)],
                 }
     else:
         return None
