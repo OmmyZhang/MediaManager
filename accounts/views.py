@@ -4,15 +4,23 @@ from django.contrib.auth import authenticate , login, logout
 from django.contrib.auth.models import User
 import os,time
 import re
-from rest_framework import status
+from rest_framework import status,permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny,IsAdminUser
 from setting.views import user_groups,group_mems,create_Belong
 from files.views import get_tag
 
+
 # Create your views here.
 
+class IsAdminOrOwner(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_superuser or (request.user == get_user(view.kwargs['id']))
+
 class OneUser(APIView):
+    permission_classes = (IsAdminUser,)
+    
     def get(self, request, format=None):
         get = request.GET
         if 'name' in get:
@@ -24,7 +32,7 @@ class OneUser(APIView):
         else:
             return Response({"info": "no name and no group"},
                     status=status.HTTP_400_BAD_REQUEST)
-        return Response([formate_user(i) for i in users])
+        return Response([format_user(i) for i in users])
     
     def post(self, request, format=None):
         body = request.data
@@ -34,9 +42,12 @@ class OneUser(APIView):
                 create_Belong(uid,g['id'])
             return Response(status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response(str(e.message),status=status.HTTP_400_BAD_REQUEST)
+            return Response({'info':str(e)},
+                    status=status.HTTP_400_BAD_REQUEST)
 
 class Signup(APIView):
+    permission_classes = (AllowAny,)
+    
     def post(self, request, format=None):
         body = request.POST
         try:
@@ -47,6 +58,8 @@ class Signup(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class Login(APIView):
+    permission_classes = (AllowAny,)
+    
     def post(self, request, format=None):
         body = request.data
         name   = body['username']
@@ -56,11 +69,53 @@ class Login(APIView):
             login(request,user)
             return Response(status=status.HTTP_200_OK)
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({"info":"login fail"},
+                    status=status.HTTP_400_BAD_REQUEST)
+
+class Logout(APIView):
+    def get(self, request, format=None):
+        logout(request)
+        return Response(status=status.HTTP_200_OK)
+
+class UserById(APIView):
+    permission_classes = (IsAdminOrOwner,)
+
+    def get(self, request, id, format=None):
+        u = format_user(id)
+        if u is not None:
+            return Response(u)
+        else:
+            return Response({'info':'Not exists'},
+                    status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, id, format=None):
+        try:
+            u = get_user(id)
+            body = request.data
+
+            u.username = body['username']
+            u.first_name = body['firstName']
+            u.email = body['email']
+            u.set_password(body['password'])
+
+            u.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({'info':str(e)},
+                    status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id, format=None):
+        u = get_user(id)
+        if u is not None:
+            u.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({'info':'No this user'},
+                    status=status.HTTP_400_BAD_REQUEST)
 
 
 #-------------------------------------
-def formate_user(id):
+def format_user(id):
     u = get_user(id)
     if u is not None:
         return {
