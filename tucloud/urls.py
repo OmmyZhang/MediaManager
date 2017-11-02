@@ -27,7 +27,7 @@ router.register(r'groups', views.GroupViewSet)
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
-    url(r'^',include('home.urls')),
+    url(r'^user/',include('accounts.urls')),
     url(r'^api/', include('postCenter.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^accounts/',include('accounts.urls')),
