@@ -32,13 +32,28 @@ class OneUser(APIView):
             create_Belong(uid,g['id'])
         return Response(status=status.HTTP_201_CREATED)
 
-class SignUp(APIView):
-    def post(self, request, format=None):
-        body = request.POST
-        creat_user(body)
+def signup_view(request):
+    body = request.POST
+    uid = creat_user(body)
+    try:
+        login(request,get_user(uid))
         return Response(status=status.HTTP_201_CREATED)
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+def login_view(request):
+        body = request.POST
+        name   = body['username']
+        passwd = body['password']
+        user = authenticate(username=name,password=passwd)
+        if user is not None:
+            login(request,user)
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+#-------------------------------------
 def formate_user(id):
     u = get_user(id)
     if u is not None:
@@ -79,7 +94,7 @@ def regex_user(rex):
             if re.match(rex,u.username) is not None ]
 
 #------------------------------------
-
+'''
 def login_view(request):
     try:
         go_url = request.GET['next']
@@ -159,4 +174,4 @@ def register_view(request):
                 }
 
     return render(request,'accounts/register.html',context) 
-
+'''
