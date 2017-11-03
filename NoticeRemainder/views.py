@@ -41,4 +41,13 @@ def timeParser(time_string):
     format_time = time_string.split(".")[0]
     time_tuple = time.strptime(format_time, "%Y-%m-%dT%X")
     return time.mktime(time_tuple)
+
+def noticeFormat(_userId, _content, _time):
+    date = time.strftime("%Y-%m-%dT%X", _time)
+    date = date + ".000Z"
+    return {
+            "date":date,
+            "content":content,
+            }
+
     
