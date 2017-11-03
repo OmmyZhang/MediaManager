@@ -6,11 +6,10 @@ import re
 from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser
-from setting.views import user_groups, group_mems, create_Belong
-from files.views import get_tag
+from rest_framework.views import APIView
 from .models import Notice
 
-class Remainder():
+class Remainder(APIView):
     def get(self, request, format=None):
         get = request.GET
         user_id = get['userID']
@@ -19,7 +18,7 @@ class Remainder():
         return Response(notice_list)
 #----------------------------------
 
-def getNotice(_user, _content):
+def sentNotice(_user, _content):
     time_token = time.time()
     try:
         Notice.object.create(userId = _user, content = _content, time = time_token)
