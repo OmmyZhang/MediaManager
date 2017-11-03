@@ -11,16 +11,16 @@ class PeopleFollowPeople(models.Model):
 	
 class PeopleStarFile(models.Model):
 	people = models.IntegerField();
-	fileid = models.IntegerField();
+	fileid = models.CharField(max_length = 100);
 	def __str__(self):
-		return str(self.people) + ' stared ' + str(self.fileid)
+		return str(self.people) + ' stared ' + self.fileid
 
 class PeopleComment(models.Model):
 	people = models.IntegerField();
-	fileid = models.IntegerField();
+	fileid = models.CharField(max_length = 100);
 	comment = models.CharField(max_length = 200);
 	def __str__(self):
-		return str(self.people) + '-->' + str(self.fileid) + '-->' self.comment
+		return str(self.people) + '-->' + self.fileid + '-->' self.comment
 	# This may not halal, I may try to deal with Chinese Character
 
 # Create your models here.
