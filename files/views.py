@@ -14,13 +14,33 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny,IsAdminUser
 
+class IsAdminOrAvailable(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return available_to_file(request.user, view.kwargs['id'])
+
 class FileList(APIView):
     def get(self, request, format=None):
-        return Response([
-            format_file(ff.id)
-            for ff in StFile.objects.filter(path = request.GET['path'])
-            if available_to_file(request.user, ff.id)
-            ])
+        body = request.GET
+
+        if 'path' in body:
+            return Response([
+                format_file(ff.id)
+                for ff in StFile.objects.filter(path = request.GET['path'])
+                if available_to_file(request.user, ff.id)
+                ])
+
+        if 'name' in body:
+            rex = body['name']
+            return Response([
+                format_file(ff.id)
+                for ff in StFile.objects.all()
+                if (re.match(rex,ff.name) is not None) and available_to_file(request.user, ff.id)
+                ])
+
+        
+        return Response({'info':'query Nothing'},
+                status=status.HTTP_400_BAD_REQUEST)
+        
 
     def post(self, request, format=None):
         body = request.data
@@ -43,6 +63,7 @@ class FileList(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
 
 class FileById(APIView):
+    permission_classes = (IsAdminOrAvailable,)
 
     def get(self, request, id, format=None):
         return Response(format_file(id))
@@ -50,15 +71,20 @@ class FileById(APIView):
     def delete(self, request, id, format=None):
         f = get_file(id)
         f.delete()
+        FileToTag.objects.filter(file_id = id).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 #-------------------------
 
 def available_to_file(u, fid):
+    f = get_file(fid)
+    if f is None:
+        return False
     if u.is_superuser:
         return True
     uid = u.id
-    owner = get_file(fid).owner
+    owner = f.owner
+    from group.views import user_groups,check_Belong
     for g in user_groups(uid):
         if check_Belong(owner, g):
             return True
