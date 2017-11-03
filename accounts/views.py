@@ -8,6 +8,7 @@ from rest_framework import status,permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny,IsAdminUser
+from rest_framework.authtoken.models import Token
 from group.views import user_groups,group_mems,create_Belong
 from group.models import Belong
 from files.views import get_tag
@@ -53,8 +54,10 @@ class Signup(APIView):
         body = request.POST
         try:
             uid = creat_user(body)
-            login(request,get_user(uid))
-            return Response(status=status.HTTP_201_CREATED)
+            user = get_user(uid)
+            login(request, user)
+            token = Token.objects.create(user=user).key
+            return Response(token, status=status.HTTP_201_CREATED)
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -66,11 +69,12 @@ class Login(APIView):
         name   = body['username']
         passwd = body['password']
         user = authenticate(username=name,password=passwd)
+        token = Token.objects.create(user=user).key
         if user is not None:
             login(request,user)
-            return Response()
+            return Response(token)
         else:
-            return Response({'info':'login fail'},
+            return Response({'infos':['login fail']},
                     status=status.HTTP_400_BAD_REQUEST)
 
 class Logout(APIView):
