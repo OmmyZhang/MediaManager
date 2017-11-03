@@ -8,7 +8,8 @@ from rest_framework import status,permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny,IsAdminUser
-from setting.views import user_groups,group_mems,create_Belong
+from group.views import user_groups,group_mems,create_Belong
+from group.models import Belong
 from files.views import get_tag
 
 
@@ -30,7 +31,7 @@ class OneUser(APIView):
             group = get['group']
             users = group_mems(int(group))
         else:
-            return Response({"info": "no name and no group"},
+            return Response({'info': 'no name and no group'},
                     status=status.HTTP_400_BAD_REQUEST)
         return Response([format_user(i) for i in users])
     
@@ -42,7 +43,7 @@ class OneUser(APIView):
                 create_Belong(uid,g['id'])
             return Response(status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response({'info':str(e)},
+            return Response({'info':repr(e)},
                     status=status.HTTP_400_BAD_REQUEST)
 
 class Signup(APIView):
@@ -67,15 +68,15 @@ class Login(APIView):
         user = authenticate(username=name,password=passwd)
         if user is not None:
             login(request,user)
-            return Response(status=status.HTTP_200_OK)
+            return Response()
         else:
-            return Response({"info":"login fail"},
+            return Response({'info':'login fail'},
                     status=status.HTTP_400_BAD_REQUEST)
 
 class Logout(APIView):
     def get(self, request, format=None):
         logout(request)
-        return Response(status=status.HTTP_200_OK)
+        return Response()
 
 class UserById(APIView):
     permission_classes = (IsAdminOrOwner,)
@@ -85,12 +86,12 @@ class UserById(APIView):
         if u is not None:
             return Response(u)
         else:
-            return Response({'info':'Not exists'},
+            return Response({'info':'No this user'},
                     status=status.HTTP_400_BAD_REQUEST)
     
     def put(self, request, id, format=None):
-        try:
-            u = get_user(id)
+        u = get_user(id)
+        if u is not None:
             body = request.data
 
             u.username = body['username']
@@ -99,9 +100,14 @@ class UserById(APIView):
             u.set_password(body['password'])
 
             u.save()
+
+            Belong.objects.filter(user_id = id).delete()
+            for gg in body['groups']:
+                create_Belong(id, gg['id'])
+
             return Response(status=status.HTTP_204_NO_CONTENT)
-        except Exception as e:
-            return Response({'info':str(e)},
+        else:
+            return Response({'info':'No this user'},
                     status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id, format=None):
@@ -119,15 +125,15 @@ def format_user(id):
     u = get_user(id)
     if u is not None:
         return {
-                "id": u.id,
-                "username": u.username,
-                "password": "NotShow",
-                "firstName": u.first_name,
-                "lastName": u.last_name,
-                "email": u.email,
-                "phone": "string",
-                "image": "string",
-                "groups": [ {"id":gid,"name":get_tag(gid).name} for gid in user_groups(u.id)],
+                'id': u.id,
+                'username': u.username,
+                'password': 'NotShow',
+                'firstName': u.first_name,
+                'lastName': u.last_name,
+                'email': u.email,
+                'phone': 'string',
+                'image': 'string',
+                'groups': [ {'id':gid,'name':get_tag(gid).name} for gid in user_groups(u.id)],
                 }
     else:
         return None

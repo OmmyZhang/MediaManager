@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'home.apps.HomeConfig',
     'files.apps.FilesConfig',
-    'setting.apps.SettingConfig',
+    'group.apps.GroupConfig',
     'rest_framework',
     'rest_framework.authtoken'
 ]
