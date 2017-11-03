@@ -24,21 +24,21 @@ class SampleTestCase(TestCase):
         self.assertEqual(sentNotice(2, str2), True)
         time2 = time.time()
         T2 = time.localtime(time2)
-        print("insert %s at %s\n" %(str2,ctime(time2)))
+        print("insert %s at %s\n" %(str2,time.ctime(time2)))
         
         time.sleep(5)
         
         self.assertEqual(sentNotice(1, str3), True)
         time3 = time.time()
         T3 = time.localtime(time3)
-        print("insert %s at %s\n"%(str3,ctime(time3)))
+        print("insert %s at %s\n"%(str3,time.ctime(time3)))
 
         time.sleep(5)
 
         self.assertEqual(sentNotice(2,str4),True)
         time4 = time.time()
         T4 = time.localtime(time4)
-        print("insert %s at %s\n" %(str4,ctime(time4)))
+        print("insert %s at %s\n" %(str4,time.ctime(time4)))
         
         form = "%Y-%m-%dT%X.000Z"
         
@@ -71,3 +71,5 @@ class SampleTestCase(TestCase):
         print(getList(2,after_time3))
         print(getList(2,after_time4))
 
+
+# Create your tests here.

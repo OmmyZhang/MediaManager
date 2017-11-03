@@ -19,19 +19,19 @@ class Remainder(APIView):
 #----------------------------------
 
 def sentNotice(_user, _content):
-    time_token = time.time()
-    try:
-        Notice.object.create(userId = _user, content = _content, time = time_token)
-    except:
-        return False
+    _time_token = time.time()
+   # try:
+    Notice.objects.create(userId = _user, content = _content, time_token = _time_token)
+   # except:
+   #     return False
     return True
 
 def getList(_user, after_time):
     notice_list = []
     time_token = timeParser(after_time)
-    for item in Notice.object.filter(userId = _user):
-        if(time_token < item.time):
-            notice_list.append(noticeFormat(item.userId, item.content, item.time))
+    for item in Notice.objects.filter(userId = _user):
+        if(time_token < item.time_token):
+            notice_list.append(noticeFormat(item.userId, item.content, item.time_token))
     return notice_list
 
 def timeParser(time_string):
@@ -40,11 +40,12 @@ def timeParser(time_string):
     return time.mktime(time_tuple)
 
 def noticeFormat(_userId, _content, _time):
-    date = time.strftime("%Y-%m-%dT%X", _time)
+    _Time = time.localtime(_time)
+    date = time.strftime("%Y-%m-%dT%X", _Time)
     date = date + ".000Z"
     return {
             "date":date,
-            "content":content,
+            "content":_content,
             }
 
-    
+

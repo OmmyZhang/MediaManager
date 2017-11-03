@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'files.apps.FilesConfig',
     'society.apps.SocietyConfig',
     'setting.apps.SettingConfig',
-    'NoticeRemainder.apps.NoticeremainderConfig',
+    'remainder.apps.RemainderConfig',
     'rest_framework',
     'rest_framework.authtoken',
 ]
