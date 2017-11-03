@@ -10,7 +10,10 @@ from rest_framework.permissions import AllowAny,IsAdminUser
 # Create your views here.
 
 
-
+class IsAdminOrMemeber(permissions.BasePermission):
+    def has_permission(self, request, view):
+        print(request.user.id,view.kwargs['id'])
+        return request.user.is_superuser or check_Belong(request.user.id, view.kwargs['id'])
 
 class TheGroup(APIView):
     permission_classes = (IsAdminUser,)
@@ -33,6 +36,7 @@ class TheGroup(APIView):
   
 
 class GroupById(APIView):
+    permission_classes = (IsAdminOrMemeber,)
 
     def get(self, request, id, format=None):
         g = get_tag(id)
@@ -49,7 +53,8 @@ class GroupById(APIView):
         g = get_tag(id)
         body = request.data
         if (g is not None) and  g.isGroup:
-            g.name = body['name'] 
+            g.name = body['name']
+            g.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({'info':'Wrong id'},
@@ -73,6 +78,7 @@ def create_Belong(ui,gi): # create a relationship between user and group
     b.save()
 
 def check_Belong(ui,gi): # check if user belong to this group
+    print(Belong.objects.filter(user_id = ui , group_id = gi))
     if Belong.objects.filter(user_id = ui , group_id = gi):
         return True
     else:

@@ -29,6 +29,7 @@ from sampleApi import views
 urlpatterns = [
     url(r'^user/',include('accounts.urls')),
     url(r'^group/',include('group.urls')),
+    url(r'^file/',include('files.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^admin/', admin.site.urls),
 ]

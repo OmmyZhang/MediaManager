@@ -15,9 +15,9 @@ from files.views import get_tag
 
 # Create your views here.
 
-class IsAdminOrOwner(permissions.BasePermission):
+class IsAdminOrSelf(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_superuser or (request.user == get_user(view.kwargs['id']))
+        return request.user.is_superuser or (request.user.id == int(view.kwargs['id']))
 
 class OneUser(APIView):
     permission_classes = (IsAdminUser,)
@@ -79,7 +79,7 @@ class Logout(APIView):
         return Response()
 
 class UserById(APIView):
-    permission_classes = (IsAdminOrOwner,)
+    permission_classes = (IsAdminOrSelf,)
 
     def get(self, request, id, format=None):
         u = format_user(id)
@@ -100,10 +100,11 @@ class UserById(APIView):
             u.set_password(body['password'])
 
             u.save()
-
-            Belong.objects.filter(user_id = id).delete()
-            for gg in body['groups']:
-                create_Belong(id, gg['id'])
+            
+            if request.user.is_superuser:
+                Belong.objects.filter(user_id = id).delete()
+                for gg in body['groups']:
+                    create_Belong(id, gg['id'])
 
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
@@ -114,6 +115,7 @@ class UserById(APIView):
         u = get_user(id)
         if u is not None:
             u.delete()
+            Belong.objects.filter(user_id = id).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({'info':'No this user'},
@@ -133,7 +135,9 @@ def format_user(id):
                 'email': u.email,
                 'phone': 'string',
                 'image': 'string',
-                'groups': [ {'id':gid,'name':get_tag(gid).name} for gid in user_groups(u.id)],
+                'groups': [ {'id':gid,'name':get_tag(gid).name} 
+                    for gid in user_groups(u.id)
+                    ],
                 }
     else:
         return None
