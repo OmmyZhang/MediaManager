@@ -1,3 +1,5 @@
 from django.db import models
-
-# Create your models here.
+class Notice(models.Model):
+    userId = models.IntegerField()
+    content = models.CharField(max_length = 200)
+    date = models.CharField(max_length = 100)
