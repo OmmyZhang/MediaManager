@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.shortcuts import render
 from django.http import HttpResponseRedirect,HttpResponse
 from django.contrib.auth import authenticate , login, logout
@@ -51,15 +52,18 @@ class Signup(APIView):
     permission_classes = (AllowAny,)
     
     def post(self, request, format=None):
-        body = request.POST
+        body = request.data
         try:
-            uid = creat_user(body)
+            uid = create_user(body)
             user = get_user(uid)
             login(request, user)
             token = '2345678'  # TODO token
             return Response(token, status=status.HTTP_201_CREATED)
+        except IntegrityError as e:
+            return Response({'info': '用户名已存在'}, status=status.HTTP_400_BAD_REQUEST)
         except:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            # TODO 告诉前端哪里错了
+            raise
 
 class Login(APIView):
     permission_classes = (AllowAny,)
@@ -103,11 +107,13 @@ class UserById(APIView):
             u.username = body['username']
             u.first_name = body['firstName']
             u.email = body['email']
-            u.set_password(body['password'])
+            # TODO 更新 phone
 
             u.save()
             
             if request.user.is_superuser:
+                if body['password']:
+                    u.set_password(body['password'])
                 Belong.objects.filter(user_id = id).delete()
                 for gg in body['groups']:
                     create_Belong(id, gg['id'])
