@@ -10,7 +10,7 @@ import random
 #More import if needed
 
 
-def followSb(APIView):   #idone follow idtwo or just cancel
+class followSb(APIView):   #idone follow idtwo or just cancel
     #followee follow the follower, this is not halal
     def post(self, request, format = None):
         body = request.data
@@ -28,7 +28,7 @@ def followSb(APIView):   #idone follow idtwo or just cancel
         return Response(status=status.HTTP_200_OK)
         # JUMPING : WE CAN SEND A MESSAGE HERE
 
-def getFollowerList(APIView):
+class getFollowerList(APIView):
     def get(self, request, format = None):
         body = request.data
         pid = body['id']
@@ -37,7 +37,7 @@ def getFollowerList(APIView):
             f.append(pid.follower)
         return Response(f)
 
-def getFolloweeList(APIView): # get all the follower
+class getFolloweeList(APIView): # get all the follower
     def get(self, request, format = None):
         body = request.data
         pid = body['id']
@@ -67,7 +67,7 @@ def getAllStarer(file): #get all the id stared the file
         f.append(pid)
     return
 
-def deleteComment(APIView):
+class deleteComment(APIView):
     def delete(self, request, format = None):
         body = request.data
         t_commentid = body['commentid']
@@ -75,7 +75,7 @@ def deleteComment(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-def commentDealer(APIView):
+class commentDealer(APIView):
     #no permission check here ?
     def post(self, request, format = None):
         body = request.data
