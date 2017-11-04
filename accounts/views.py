@@ -56,7 +56,7 @@ class Signup(APIView):
             uid = creat_user(body)
             user = get_user(uid)
             login(request, user)
-            token = Token.objects.create(user=user).key
+            token = '2345678'  # TODO token
             return Response(token, status=status.HTTP_201_CREATED)
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -69,12 +69,14 @@ class Login(APIView):
         name   = body['username']
         passwd = body['password']
         user = authenticate(username=name,password=passwd)
-        token = Token.objects.create(user=user).key
+        token = '2345678'  # TODO token
+        # TODO info: 用户名不存在 / 密码错误
+        # TODO bug 后创建用户无法登陆？
         if user is not None:
             login(request,user)
             return Response(token)
         else:
-            return Response({'infos':['login fail']},
+            return Response({'info':'login fail'},
                     status=status.HTTP_400_BAD_REQUEST)
 
 class Logout(APIView):

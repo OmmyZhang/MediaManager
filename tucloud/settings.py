@@ -73,6 +73,8 @@ MIDDLEWARE = [
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+APPEND_SLASH = False
+
 ROOT_URLCONF = 'tucloud.urls'
 
 TEMPLATES = [
