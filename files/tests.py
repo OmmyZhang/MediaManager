@@ -1,6 +1,6 @@
 from django.test import TestCase
 from files.views import *
-from setting.views import *
+from group.views import *
 from accounts.views import *
 from files.views import remove,rename,move,copy,new
 import os

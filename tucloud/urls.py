@@ -19,17 +19,17 @@ from rest_framework import routers
 from sampleApi import views
 
 # Routers provide an easy way of automatically determining the URL conf.
-router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
-router.register(r'groups', views.GroupViewSet)
+#router = routers.DefaultRouter()
+#router.register(r'users', views.UserViewSet)
+#router.register(r'groups', views.GroupViewSet)
 
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
-    url(r'^user/',include('accounts.urls')),
-    url(r'^api/', include('postCenter.urls')),
+    url(r'^user/?',include('accounts.urls')),
+    url(r'^group/?',include('group.urls')),
+    url(r'^file/?',include('files.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^accounts/',include('accounts.urls')),
     url(r'^admin/', admin.site.urls),
 ]
