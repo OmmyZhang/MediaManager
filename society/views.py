@@ -6,6 +6,7 @@ from .models import PeopleFollowPeople, PeopleStarFile, PeopleComment
 from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
+import random
 #More import if needed
 
 
@@ -25,10 +26,7 @@ def followSb(APIView):   #idone follow idtwo or just cancel
         idtwo = body['othersID']
         PeopleFollowPeople.objects.filter(followee = idone, follower = idtwo).delete()
         return Response(status=status.HTTP_200_OK)
-    else:
-
         # JUMPING : WE CAN SEND A MESSAGE HERE
-    return True
 
 def getFollowerList(APIView):
     def get(self, request, format = None):
@@ -72,33 +70,60 @@ def getAllStarer(file): #get all the id stared the file
 def deleteComment(APIView):
     def delete(self, request, format = None):
         body = request.data
-        cid = body['id']
-    #About comment, we need to rewrite
+        t_commentid = body['commentid']
+        PeopleComment.objects.filter(commentid=t_commentid).delete()
+        return Response(status=status.HTTP_200_OK)
+
 
 def commentDealer(APIView):
     #no permission check here ?
-    #wait to finish
-    #not halal yet
     def post(self, request, format = None):
         body = request.data
-        id = body['userid']
-        file = body['fileid']
-        comment = body['comment']
-        if len(comment) > 200:
-            return Response({"info":"Comment too long"},
-                    status=status.HTTP_400_BAD_REQUEST)
-        PeopleComment.objects.create(people=id, fileid=file, comment=comment)
-        # JUMPING : WE CAN SEND A MESSAGE HERE
+        t_uesrid = body['userId']
+        t_fileid = body['fileId']
+        t_date = body['date']
+        t_type = int(body['type'])
+        if (t_type == 1):
+            t_comment = body['comment']
+            if len(t_comment) > 200:
+                return Response({"info":"Comment too long"},
+                        status=status.HTTP_400_BAD_REQUEST)
+            # JUMPING : WE CAN SEND A MESSAGE HERE
+        if (t_type == 2):
+            pass
+            # JUMPING : WE CAN SEND A MESSAGE HERE
+        if (t_type == 3):
+            # JUMPING : WE CAN UPDATE FILE INFO HERE
+            # JUMPING : WE CAN SEND A MESSAGE HERE
+            pass
+        t_commentid = random.randint(1, 2147483647)
+        while (True):
+            if PeopleComment.objects.filter(commentid = t_commentid):
+                break
+            t_commentid = random.randint(1, 2147483647)
+        PeopleComment.objects.create(commentid = t_commentid, userid = t_userid,
+                                     fileid = t_fileid      , date = t_date,
+                                     type = t_type          , comment = body['comment'],
+                                     star = body['star']    , score = body['score'])
         return Response(status=status.HTTP_200_OK)
 
     def get(self, request, format = None):
         body = request.data
+        t_fileid = body['fileId']
+        t_type = body['type']
         f = []
-        for comment in PeopleComment.objects.filter(fileid=file):
-            infotuple = (comment.id, comment.comment)
-            f.append(infotuple)
-            #This is not halal
-        return f
+        for comment in PeopleComment.objects.filter(fileid = t_fileid, type = t_type):
+            a_comment = {}
+            a_comment['commentid'] = comment.commentid
+            a_comment['userid'] = comment.userid
+            a_comment['fileid'] = comment.fileid
+            a_comment['date'] = comment.date
+            a_comment['type'] = comment.type
+            a_comment['star'] = comment.star
+            a_comment['score'] = comment.score
+            a_comment['comment'] = comment.comment
+            f.append(a_comment)
+        return Response(f)
 
 def removeFile(file): #remove the star and comment about a file
     PeopleStarFile.objects.filter(fileid = file).delete()
