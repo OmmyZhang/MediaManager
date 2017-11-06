@@ -14,9 +14,6 @@ info:
   termsOfService: "http://47.94.142.165:8088/gitlab/PRJ1_PraiseTheSun/MediaManager"
   contact:
     email: "wangrunji0408@163.com"
-  license:
-    name: "Apache 2.0"
-    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
 host: "localhost:8000"
 basePath: "/"
 tags:
@@ -28,6 +25,10 @@ tags:
   description: "Operations about file"
 - name: "social"
   description: "Operations about social"
+- name: "statistic"
+  description: "Operations about statistic"
+- name: "other"
+  description: "Other operations"
 schemes:
 - "http"
 securityDefinitions:
@@ -50,7 +51,6 @@ paths:
       description: "管理员用户创建新用户"
       operationId: "createUser"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - in: "body"
@@ -62,6 +62,8 @@ paths:
       responses:
         default:
           description: "successful operation"
+          schema:
+            $ref: "#/definitions/User"
         400:
           description: "error"
           schema:
@@ -73,7 +75,6 @@ paths:
       description: "搜索用户"
       operationId: "getUser"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "name"
@@ -105,7 +106,6 @@ paths:
       operationId: "signupUser"
       security: []
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - in: "body"
@@ -141,16 +141,17 @@ paths:
       operationId: "loginUser"
       security: []
       produces:
-      - "application/xml"
       - "application/json"
+      consumes:
+      - "application/x-www-form-urlencoded"
       parameters:
       - name: "username"
-        in: "query"
+        in: "formData"
         description: "The user name for login"
         required: true
         type: "string"
       - name: "password"
-        in: "query"
+        in: "formData"
         description: "The password for login in clear text"
         required: true
         type: "string"
@@ -181,7 +182,6 @@ paths:
       description: ""
       operationId: "logoutUser"
       produces:
-      - "application/xml"
       - "application/json"
       parameters: []
       responses:
@@ -199,7 +199,6 @@ paths:
       description: ""
       operationId: "getUserByName"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -222,7 +221,6 @@ paths:
       description: "This can only be done by the logged in user."
       operationId: "updateUser"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -238,6 +236,8 @@ paths:
       responses:
         200:
           description: "successful operation"
+          schema:
+            $ref: "#/definitions/User"
         400:
           description: "error"
           schema:
@@ -249,7 +249,6 @@ paths:
       description: "This can only be done by the admin user."
       operationId: "deleteUser"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -291,7 +290,6 @@ paths:
       summary: "Upload user avatar image"
       operationId: "uploadUserAvatar"
       produces:
-      - "application/xml"
       - "application/json"
       consumes:
       - "multipart/form-data"
@@ -318,7 +316,6 @@ paths:
       summary: "Change user password"
       operationId: "changeUserPassword"
       produces:
-      - "application/xml"
       - "application/json"
       consumes:
       - "application/x-www-form-urlencoded"
@@ -350,7 +347,6 @@ paths:
       description: "管理员用户创建新用户组"
       operationId: "createUserGroup"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - in: "body"
@@ -362,6 +358,8 @@ paths:
       responses:
         200:
           description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserGroup"
         400:
           description: "error"
           schema:
@@ -373,7 +371,6 @@ paths:
       description: ""
       operationId: "getUserGroups"
       produces:
-      - "application/xml"
       - "application/json"
       responses:
         200:
@@ -394,7 +391,6 @@ paths:
       description: ""
       operationId: "getUserGroupById"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -417,7 +413,6 @@ paths:
       summary: "Update group"
       operationId: "updateUserGroup"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -434,6 +429,8 @@ paths:
       responses:
         200:
           description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserGroup"
         400:
           description: "error"
           schema:
@@ -445,7 +442,6 @@ paths:
       description: "删除用户组，同时删除组内用户的标记"
       operationId: "deleteUserGroup"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -468,7 +464,6 @@ paths:
       description: "新建空白文件或文件夹"
       operationId: "createFile"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - in: "body"
@@ -486,6 +481,8 @@ paths:
       responses:
         default:
           description: "successful operation"
+          schema:
+            $ref: "#/definitions/File"
         400:
           description: "error"
           schema:
@@ -497,7 +494,6 @@ paths:
       description: "Used for searching files"
       operationId: "getFiles"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "path"
@@ -552,22 +548,23 @@ paths:
           description: "error"
           schema:
             $ref: '#/definitions/ErrorInfo'
-    patch:
+    put:
       tags:
       - "file"
       summary: "Do some commands on files."
       description:
         "这个接口用于对一些文件进行一些操作。\n
-        对每个文件， id 属性外 \n
+        对每个文件，除 id 属性外 \n
         通过提供对应属性的新值来指示进行哪些操作：\n
         * 重命名 name \n
         * 移动位置 path \n
         * 修改标签 tags \n\n
         后端需逐条判断是否有值，是否变化，然后进行操作。对其它属性的修改均无效。\n
-        若全部操作成功，则返回200。否则返回400，描述每个失败操作。"
+        若全部操作成功，则返回200。否则返回400，描述每个失败操作。\n
+        由于微信小程序不支持PATCH，故改为PUT。然而实质上这是个PATCH。
+        "
       operationId: "updateFiles"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - in: "body"
@@ -593,7 +590,6 @@ paths:
       description: "Used for searching files"
       operationId: "getFileById"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -617,7 +613,6 @@ paths:
       description: ""
       operationId: "deleteFile"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -632,19 +627,23 @@ paths:
           description: "error"
           schema:
             $ref: '#/definitions/ErrorInfo'
-  /file/upload:
+  /file/{id}/data:
     post:
       tags:
       - "file"
-      summary: "Upload file"
-      description: "上传文件"
+      summary: "Upload file or update file data."
+      description: "ID = 0 if uploading a new file"
       operationId: "uploadFile"
       produces:
-      - "application/xml"
       - "application/json"
       consumes:
       - "multipart/form-data"
       parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        description: "File id"
+        type: "string"
       - in: formData
         name: file
         type: file
@@ -662,14 +661,12 @@ paths:
           description: "error"
           schema:
             $ref: '#/definitions/ErrorInfo'
-  /file/download/{id}:
     get:
       tags:
       - "file"
       summary: "Download file"
       operationId: "downloadFile"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -680,6 +677,8 @@ paths:
       responses:
         200:
           description: "successful operation"
+          schema:
+            type: file
         400:
           description: "error"
           schema:
@@ -691,7 +690,6 @@ paths:
       summary: "Get all comments about the file"
       operationId: "getFileComments"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "fileID"
@@ -720,7 +718,6 @@ paths:
       summary: "Post new comment about the file"
       operationId: "postComment"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - in: "body"
@@ -732,9 +729,29 @@ paths:
         200:
           description: "successful operation"
           schema:
-            type: "array"
-            items:
-              $ref: '#/definitions/Comment'
+            $ref: '#/definitions/Comment'
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+    put:
+      tags:
+      - "social"
+      summary: "Update comment"
+      operationId: "updateComment"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: '#/definitions/Comment'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: '#/definitions/Comment'
         400:
           description: "error"
           schema:
@@ -746,7 +763,6 @@ paths:
       summary: "Delete the comment"
       operationId: "deleteComment"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -769,7 +785,6 @@ paths:
       summary: "Get all followers of the user"
       operationId: "getUserFollower"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -796,7 +811,6 @@ paths:
       summary: "Get all followings of the user"
       operationId: "getUserFollowing"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -823,7 +837,6 @@ paths:
       summary: "Follow another user"
       operationId: "followUser"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -847,7 +860,6 @@ paths:
       summary: "Unfollow another user"
       operationId: "unfollowUser"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -872,7 +884,6 @@ paths:
       summary: "Get all events of the user after a given time"
       operationId: "getUserEvents"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "userID"
@@ -891,6 +902,76 @@ paths:
             type: "array"
             items:
               $ref: '#/definitions/Event'
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /statistic/user/{id}:
+    get:
+      tags:
+      - "statistic"
+      summary: "Get user statistic info"
+      operationId: "getUserStatistic"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserStat"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /statistic/file/{id}:
+    get:
+      tags:
+      - "statistic"
+      summary: "Get file statistic info"
+      operationId: "getFileStatistic"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/FileStat"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /image/similar:
+    post:
+      tags:
+      - "other"
+      summary: "Search similar image by given image"
+      operationId: "searchSimilarImage"
+      produces:
+      - "application/json"
+      consumes:
+      - "multipart/form-data"
+      parameters:
+      - in: formData
+        name: imageFile
+        type: file
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/File"
+            description: "File infos of all similar image"
         400:
           description: "error"
           schema:
@@ -935,6 +1016,8 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/FileTag"
+      videoInfo:
+        $ref: "#/definitions/VideoInfo"
     xml:
       name: "File"
   UserGroup:
@@ -969,13 +1052,12 @@ definitions:
         type: "string"
       phone:
         type: "string"
-      image:
-        type: "string"
-        description: "头像图片地址"
       groups:
         type: "array"
         items:
           $ref: "#/definitions/UserGroup"
+      space:
+        $ref: "#/definitions/SpaceInfo"
     xml:
       name: "User"
   FileTag:
@@ -1029,13 +1111,73 @@ definitions:
       content:
         type: "string"
         description: "For now, just describe events in plain string ..."
+  SpaceInfo:
+    type: "object"
+    properties:
+      totalSize:
+        type: "integer"
+      usedSize:
+        type: "integer"
+  VideoInfo:
+    type: "object"
+    properties:
+      duration:
+        type: "string"
+      colorChannel:
+        type: "string"
+      bitRate:
+        type: "string"
+      resolution:
+        type: "string"
+      aspectRatio:
+        type: "string"
+  UserStat:
+    type: "object"
+    properties:
+      uploadCount:
+        type: "integer"
+      downloadCount:
+        type: "integer"
+      chartData:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            date:
+              type: "string"
+              format: "date-time"
+            uploadCount:
+              type: "integer"
+            downloadCount:
+              type: "integer"
+            uploadSize:
+              type: "integer"
+            downloadSize:
+              type: "integer"
+  FileStat:
+    type: "object"
+    properties:
+      previewCount:
+        type: "integer"
+      downloadCount:
+        type: "integer"
+      chartData:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            date:
+              type: "string"
+              format: "date-time"
+            previewCount:
+              type: "integer"
+            downloadCount:
+              type: "integer"
   ErrorInfo:
     type: "object"
     properties:
-      infos:
-        type: "array"
-        items:
-          type: "string"
+      info:
+        type: "string"
     xml:
       name: "ErrorInfo"
 externalDocs:
