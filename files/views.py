@@ -49,6 +49,42 @@ class FileList(APIView):
         
         id, resp = create_file_and_resp(body)
         return resp
+    
+    def put(self, request, format=None):
+       
+        err = []
+        for body in request.data:
+            id = body['id']
+            if not available_to_file(request.user, id):
+                err.append({
+                    'id':id,
+                    'error':'no permission'
+                    })
+                continue
+
+            f = get_file(id)
+            
+            serializer = FileSerializer(f, data = body, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                err.append({
+                    'id':id,
+                    'error':serializer.errors
+                    })
+
+            if 'tags' in body:
+                FileToTag.objects.filter(file_id = id).delete()
+                for t in body['tags']:
+                    create_FileToTag(id, t['id'])
+            
+            if 'videoInfo' in body:
+                pass
+        
+        if err:
+            return Response({'info':err},
+                    status=status.HTTP_400_BAD_REQUEST)
+        return  Response()
 
 def create_file_and_resp(data):
     data['modifyDate'] = time.strftime("%Y-%m-%dT%H:%m:%S")
@@ -77,6 +113,8 @@ class FileById(APIView):
         f.delete()
         FileToTag.objects.filter(file_id = id).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
 
 class FileData(APIView):
     permission_classes = (IsAdminOrAvailable,)
@@ -88,14 +126,13 @@ class FileData(APIView):
         f = request.FILES['file']
         path = body['path']
 
-        print(f.name)
         fname = request.user.username + ':' + f.name + '.part_' + str(time.time())
         with open('data/'+fname, 'wb+') as des:
             for chunk in f.chunks():
                 des.write(chunk)
 
         data = {
-                'owner': request.user.id,
+                'ownerID': request.user.id,
                 'name': f.name,
                 'createDate': time.strftime("%Y-%m-%dT%H:%m:%S"),
                 'path': path,
@@ -115,14 +152,12 @@ class FileData(APIView):
         resp = StreamingHttpResponse(file_iterator('data/'+ str(id)))
         resp['Content-Type'] = 'application/octet-stream'
         resp['Content-Disposition'] = 'attachment;filename="%s"' % f.name.encode('utf-8').decode('ISO-8859-1')
-        print(resp)
 
         return resp
 
 #-------------------------
 
 def available_to_file(u, fid):
-    print('fid:',fid)
     if fid == 0:
         return True
     f = get_file(fid)
@@ -131,10 +166,10 @@ def available_to_file(u, fid):
     if u.is_superuser:
         return True
     uid = u.id
-    owner = f.owner
+    ownerID = f.ownerID
     from group.views import user_groups,check_Belong
     for g in user_groups(uid):
-        if check_Belong(owner, g):
+        if check_Belong(ownerID, g):
             return True
     return False
 
@@ -191,14 +226,14 @@ def get_file(id):
     except:
         return None
 
-def files_here(owner,path):
+def files_here(ownerID,path):
     fh = []
-    for ff in StFile.objects.filter(owner = owner, path = path):
+    for ff in StFile.objects.filter(ownerID = ownerID, path = path):
         fh.append(ff.id)
     return fh
 
-def new_file(owner, path,name):
-    newF = StFile(owner = owner, path = path , name = name)
+def new_file(ownerID, path,name):
+    newF = StFile(ownerID = ownerID, path = path , name = name)
     newF.save()
     return newF.id
 

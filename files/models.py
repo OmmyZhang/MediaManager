@@ -18,7 +18,7 @@ class StTag(models.Model):
         return (str(self.id) + ' is ' +self.name)
 
 class StFile(models.Model):
-    owner= models.IntegerField(default = -1)
+    ownerID = models.IntegerField(default = -1)
     path = models.CharField(max_length = 200) 
     name = models.CharField(max_length = 100)
     isDir= models.BooleanField(default = True)
@@ -26,12 +26,12 @@ class StFile(models.Model):
     createDate = models.DateTimeField()
     size = models.FloatField()
     def __str__(self):
-        return (str(self.owner) + '\'s. ' + str(self.id) + ' is ' + self.path + self.name)
+        return (str(self.ownerID) + '\'s. ' + str(self.id) + ' is ' + self.path + self.name)
     
 
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StFile
-        fields = ('id', 'owner', 'path','name','isDir','modifyDate','createDate','size')
+        fields = ('id', 'ownerID', 'path','name','isDir','modifyDate','createDate','size')
 
 
