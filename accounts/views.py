@@ -156,9 +156,9 @@ def format_user(id):
 
 def create_user(info):
     newM = User.objects.create_user(
-                info['username'],
-                info['password'],
-                info['email']
+                username = info['username'],
+                email = info['email'],
+                password = info['password']
                 )
     newM.save()
     
