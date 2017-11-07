@@ -44,7 +44,7 @@ class FileList(APIView):
 
     def post(self, request, format=None):
         body = request.data
-        body['owner'] = request.user.id
+        body['ownerID'] = request.user.id
         body['createDate'] = time.strftime("%Y-%m-%dT%H:%m:%S")
         
         id, resp = create_file_and_resp(body)
@@ -160,16 +160,19 @@ class FileData(APIView):
 def available_to_file(u, fid):
     if fid == 0:
         return True
+
     f = get_file(fid)
     if f is None:
         return False
-    if u.is_superuser:
+    
+    if u.is_superuser or u.id == f.ownerID:
         return True
+    
     uid = u.id
-    ownerID = f.ownerID
-    from group.views import user_groups,check_Belong
+    
+    from group.views import user_groups
     for g in user_groups(uid):
-        if check_Belong(ownerID, g):
+        if check_FileToTag(fid, g):
             return True
     return False
 
