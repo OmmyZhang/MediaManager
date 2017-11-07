@@ -20,9 +20,11 @@ tags:
 - name: "user"
   description: "Operations about user"
 - name: "group"
-  description: "Operations about usergroup"
+  description: "Operations about user group"
 - name: "file"
   description: "Operations about file"
+- name: "filetag"
+  description: "Operations about file tag"
 - name: "social"
   description: "Operations about social"
 - name: "statistic"
@@ -159,8 +161,12 @@ paths:
         200:
           description: "successful operation"
           schema:
-            type: "string"
-            description: "Token"
+            type: "object"
+            properties:
+              token:
+                type: "string"
+              userID:
+                type: "integer"
           headers:
             X-Rate-Limit:
               type: "integer"
@@ -508,35 +514,10 @@ paths:
         default: ".*"
       - name: "tags"
         in: "query"
-        description: "File tags"
+        description: "File tag IDs"
         type: "array"
         items:
-          type: "string"
-      # 暂时不实现排序和分页
-      # - name: "orderby"
-      #   in: "query"
-      #   description: "Orderby = name / size / modifyDate"
-      #   type: "string"
-      #   enum:
-      #   - "name"
-      #   - "modifyDate"
-      # - name: "order"
-      #   in: "query"
-      #   description: "ascending / descending"
-      #   type: "string"
-      #   enum:
-      #   - "ascending"
-      #   - "descending"
-      #   default: "ascending"
-      # - name: "page"
-      #   in: "query"
-      #   description: "Page number. Begin from 1."
-      #   type: "integer"
-      # - name: "pagesize"
-      #   in: "query"
-      #   description: "Page size. Default = 10."
-      #   type: "integer"
-      #   default: 10
+          type: "integer"
       responses:
         200:
           description: "successful operation"
@@ -554,11 +535,13 @@ paths:
       summary: "Do some commands on files."
       description:
         "这个接口用于对一些文件进行一些操作。\n
+        权限：仅对管理员及文件所有者有效。\n
         对每个文件，除 id 属性外 \n
         通过提供对应属性的新值来指示进行哪些操作：\n
         * 重命名 name \n
         * 移动位置 path \n
-        * 修改标签 tags \n\n
+        * 修改标签 tags \n
+        * 修改分享到组 shareToGroups \n\n
         后端需逐条判断是否有值，是否变化，然后进行操作。对其它属性的修改均无效。\n
         若全部操作成功，则返回200。否则返回400，描述每个失败操作。\n
         由于微信小程序不支持PATCH，故改为PUT。然而实质上这是个PATCH。
@@ -679,6 +662,122 @@ paths:
           description: "successful operation"
           schema:
             type: file
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /filetag:
+    post:
+      tags:
+      - "filetag"
+      summary: "Create file tag"
+      operationId: "createFileTag"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created file tag"
+        required: true
+        schema:
+          $ref: "#/definitions/FileTag"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/FileTag"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+    get:
+      tags:
+      - "filetag"
+      summary: "Get all file tags"
+      description: ""
+      operationId: "getFileTags"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/FileTag"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /filetag/{id}:
+    get:
+      tags:
+      - "filetag"
+      summary: "Get file tag by ID"
+      description: ""
+      operationId: "getFileTagById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/FileTag"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+    put:
+      tags:
+      - "filetag"
+      summary: "Update file tag"
+      operationId: "updateFileTag"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Updated file tag object"
+        required: true
+        schema:
+          $ref: "#/definitions/FileTag"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/FileTag"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+    delete:
+      tags:
+      - "filetag"
+      summary: "Delete file tag"
+      description: "And remove it in all files"
+      operationId: "deleteFileTag"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
         400:
           description: "error"
           schema:
@@ -990,13 +1089,10 @@ definitions:
         type: "boolean"
       name:
         type: "string"
-        description: "文件名"
+        description: "File name"
       path:
         type: "string"
-        description: "文件绝对路径，不含文件名"
-      url:
-        type: "string"
-        description: "Download link"
+        description: "Absolute path, name is not included"
       md5:
         type: "string"
       thumbnails:
@@ -1016,6 +1112,11 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/FileTag"
+      shareToGroups:
+        type: "array"
+        items:
+          $ref: "#/definitions/UserGroup"
+        description: "Only available when get by admin or owner"
       videoInfo:
         $ref: "#/definitions/VideoInfo"
     xml:
