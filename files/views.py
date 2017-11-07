@@ -16,7 +16,7 @@ from rest_framework.permissions import AllowAny,IsAdminUser
 
 class IsAdminOrAvailable(permissions.BasePermission):
     def has_permission(self, request, view):
-        return available_to_file(request.user, view.kwargs['id'])
+        return available_to_file(request.user, int(view.kwargs['id']))
 
 class FileList(APIView):
     def get(self, request, format=None):
@@ -79,8 +79,9 @@ class FileById(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class FileData(APIView):
+    permission_classes = (IsAdminOrAvailable,)
 
-    def post(self, request, format=None):
+    def post(self, request, id, format=None):
         
         body = request.data
 
@@ -107,9 +108,23 @@ class FileData(APIView):
 
         return resp
 
+    def get(self, request, id, format=None):
+        
+        f = get_file(id)
+
+        resp = StreamingHttpResponse(file_iterator('data/'+ str(id)))
+        resp['Content-Type'] = 'application/octet-stream'
+        resp['Content-Disposition'] = 'attachment;filename="%s"' % f.name.encode('utf-8').decode('ISO-8859-1')
+        print(resp)
+
+        return resp
+
 #-------------------------
 
 def available_to_file(u, fid):
+    print('fid:',fid)
+    if fid == 0:
+        return True
     f = get_file(fid)
     if f is None:
         return False
