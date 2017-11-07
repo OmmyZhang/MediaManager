@@ -78,7 +78,7 @@ class Login(APIView):
         # TODO bug 后创建用户无法登陆？
         if user is not None:
             login(request,user)
-            return Response(token)
+            return Response({'token': token, 'userID': user.id})
         else:
             return Response({'info':'login fail'},
                     status=status.HTTP_400_BAD_REQUEST)
