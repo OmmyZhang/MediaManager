@@ -22,7 +22,6 @@ class StFile(models.Model):
     path = models.CharField(max_length = 200) 
     name = models.CharField(max_length = 100)
     isDir= models.BooleanField(default = True)
-    url  = models.CharField(max_length = 200)
     modifyDate = models.DateTimeField()
     createDate = models.DateTimeField()
     size = models.FloatField()
@@ -33,6 +32,6 @@ class StFile(models.Model):
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StFile
-        fields = ('id', 'owner', 'path','name','isDir','url','modifyDate','createDate','size')
+        fields = ('id', 'owner', 'path','name','isDir','modifyDate','createDate','size')
 
 

@@ -45,22 +45,26 @@ class FileList(APIView):
     def post(self, request, format=None):
         body = request.data
         body['owner'] = request.user.id
-        body['createDate'] = body['modifyDate'] = time.strftime("%Y-%m-%dT%H:%m:%S")
-        print(body['createDate'])
-        body['size'] = 0
-        body['url'] = '/file/download/'
+        body['createDate'] = time.strftime("%Y-%m-%dT%H:%m:%S")
+        
+        id, resp = create_file_and_resp(body)
+        return resp
 
-        serializer = FileSerializer(data=body)
-        if serializer.is_valid():
-            serializer.save()
-            id = serializer.data['id']
-            f = get_file(id)
-            f.url += str(id) + '/'
-            f.save()
-            return Response(format_file(id),
+def create_file_and_resp(data):
+    data['modifyDate'] = time.strftime("%Y-%m-%dT%H:%m:%S")
+    data['size'] = 0
+
+    serializer = FileSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        id = serializer.data['id'] 
+        return id, Response(format_file(id),
                     status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,
+        
+    return None, Response(serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST)
+
+    
 
 class FileById(APIView):
     permission_classes = (IsAdminOrAvailable,)
@@ -73,6 +77,35 @@ class FileById(APIView):
         f.delete()
         FileToTag.objects.filter(file_id = id).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class FileData(APIView):
+
+    def post(self, request, format=None):
+        
+        body = request.data
+
+        f = request.FILES['file']
+        path = body['path']
+
+        print(f.name)
+        fname = request.user.username + ':' + f.name + '.part_' + str(time.time())
+        with open('data/'+fname, 'wb+') as des:
+            for chunk in f.chunks():
+                des.write(chunk)
+
+        data = {
+                'owner': request.user.id,
+                'name': f.name,
+                'createDate': time.strftime("%Y-%m-%dT%H:%m:%S"),
+                'path': path,
+                'isDir': False
+                }
+
+        id, resp = create_file_and_resp(data)
+    
+        os.rename('data/'+fname,'data/'+str(id))
+
+        return resp
 
 #-------------------------
 
