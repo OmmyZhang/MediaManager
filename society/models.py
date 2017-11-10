@@ -11,7 +11,7 @@ class PeopleFollowPeople(models.Model):
 	
 class PeopleStarFile(models.Model):
 	people = models.IntegerField(default = 0)
-	fileid = models.CharField(default = 0)
+	fileid = models.CharField(max_length = 100)
 	def __str__(self):
 		return str(self.people) + ' stared ' + self.fileid
 
