@@ -1,3 +1,4 @@
 djangorestframework
 django
 coverage
+django-cors-headers

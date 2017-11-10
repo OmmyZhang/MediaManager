@@ -14,20 +14,36 @@ info:
   termsOfService: "http://47.94.142.165:8088/gitlab/PRJ1_PraiseTheSun/MediaManager"
   contact:
     email: "wangrunji0408@163.com"
-  license:
-    name: "Apache 2.0"
-    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
 host: "localhost:8000"
 basePath: "/"
 tags:
 - name: "user"
   description: "Operations about user"
 - name: "group"
-  description: "Operations about usergroup"
+  description: "Operations about user group"
 - name: "file"
   description: "Operations about file"
+- name: "filetag"
+  description: "Operations about file tag"
+- name: "social"
+  description: "Operations about social"
+- name: "statistic"
+  description: "Operations about statistic"
+- name: "other"
+  description: "Other operations"
 schemes:
 - "http"
+securityDefinitions:
+  # Authorization: Token ...
+  APIKeyHeader:
+    type: apiKey
+    in: header
+    name: Authorization
+  basicAuth:
+    type: basic
+security:
+  - APIKeyHeader: []
+  - basicAuth: []
 paths:
   /user:
     post:
@@ -37,7 +53,6 @@ paths:
       description: "管理员用户创建新用户"
       operationId: "createUser"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - in: "body"
@@ -49,6 +64,8 @@ paths:
       responses:
         default:
           description: "successful operation"
+          schema:
+            $ref: "#/definitions/User"
         400:
           description: "error"
           schema:
@@ -60,7 +77,6 @@ paths:
       description: "搜索用户"
       operationId: "getUser"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "name"
@@ -87,11 +103,11 @@ paths:
     post:
       tags:
       - "user"
-      summary: "Signup user"
+      summary: "Signup user. Return a token."
       description: "游客自助注册用户"
       operationId: "signupUser"
+      security: []
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - in: "body"
@@ -111,28 +127,33 @@ paths:
       responses:
         default:
           description: "successful operation"
+          schema:
+            type: "string"
+            description: "Token"
         400:
           description: "error"
           schema:
             $ref: '#/definitions/ErrorInfo'
   /user/login:
-    get:
+    post:
       tags:
       - "user"
-      summary: "Logs user into the system"
+      summary: "Logs user into the system. Return a token."
       description: ""
       operationId: "loginUser"
+      security: []
       produces:
-      - "application/xml"
       - "application/json"
+      consumes:
+      - "application/x-www-form-urlencoded"
       parameters:
       - name: "username"
-        in: "query"
+        in: "formData"
         description: "The user name for login"
         required: true
         type: "string"
       - name: "password"
-        in: "query"
+        in: "formData"
         description: "The password for login in clear text"
         required: true
         type: "string"
@@ -140,7 +161,12 @@ paths:
         200:
           description: "successful operation"
           schema:
-            type: "string"
+            type: "object"
+            properties:
+              token:
+                type: "string"
+              userID:
+                type: "integer"
           headers:
             X-Rate-Limit:
               type: "integer"
@@ -162,7 +188,6 @@ paths:
       description: ""
       operationId: "logoutUser"
       produces:
-      - "application/xml"
       - "application/json"
       parameters: []
       responses:
@@ -176,11 +201,10 @@ paths:
     get:
       tags:
       - "user"
-      summary: "Get user by user name"
+      summary: "Get user by ID"
       description: ""
       operationId: "getUserByName"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -199,11 +223,10 @@ paths:
     put:
       tags:
       - "user"
-      summary: "Updated user"
+      summary: "Update user"
       description: "This can only be done by the logged in user."
       operationId: "updateUser"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -219,6 +242,8 @@ paths:
       responses:
         200:
           description: "successful operation"
+          schema:
+            $ref: "#/definitions/User"
         400:
           description: "error"
           schema:
@@ -230,13 +255,89 @@ paths:
       description: "This can only be done by the admin user."
       operationId: "deleteUser"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
         in: "path"
         required: true
         type: "integer"
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /user/{id}/avatar:
+    get:
+      tags:
+      - "user"
+      summary: "Get user avatar image"
+      operationId: "getUserAvatar"
+      produces:
+      - "image/jpeg"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: file
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+    post:
+      tags:
+      - "user"
+      summary: "Upload user avatar image"
+      operationId: "uploadUserAvatar"
+      produces:
+      - "application/json"
+      consumes:
+      - "multipart/form-data"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+      - in: formData
+        name: file
+        type: file
+        description: The image to upload.
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /user/{id}/password:
+    post:
+      tags:
+      - "user"
+      summary: "Change user password"
+      operationId: "changeUserPassword"
+      produces:
+      - "application/json"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+      - name: "oldPassword"
+        in: "formData"
+        required: true
+        type: "string"
+      - name: "newPassword"
+        in: "formData"
+        required: true
+        type: "string"
       responses:
         200:
           description: "successful operation"
@@ -252,7 +353,6 @@ paths:
       description: "管理员用户创建新用户组"
       operationId: "createUserGroup"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - in: "body"
@@ -264,6 +364,8 @@ paths:
       responses:
         200:
           description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserGroup"
         400:
           description: "error"
           schema:
@@ -275,7 +377,6 @@ paths:
       description: ""
       operationId: "getUserGroups"
       produces:
-      - "application/xml"
       - "application/json"
       responses:
         200:
@@ -296,7 +397,6 @@ paths:
       description: ""
       operationId: "getUserGroupById"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -316,10 +416,9 @@ paths:
     put:
       tags:
       - "group"
-      summary: "Updated group"
+      summary: "Update group"
       operationId: "updateUserGroup"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -336,6 +435,8 @@ paths:
       responses:
         200:
           description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserGroup"
         400:
           description: "error"
           schema:
@@ -347,7 +448,6 @@ paths:
       description: "删除用户组，同时删除组内用户的标记"
       operationId: "deleteUserGroup"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -370,7 +470,6 @@ paths:
       description: "新建空白文件或文件夹"
       operationId: "createFile"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - in: "body"
@@ -388,6 +487,8 @@ paths:
       responses:
         default:
           description: "successful operation"
+          schema:
+            $ref: "#/definitions/File"
         400:
           description: "error"
           schema:
@@ -399,7 +500,6 @@ paths:
       description: "Used for searching files"
       operationId: "getFiles"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "path"
@@ -414,35 +514,10 @@ paths:
         default: ".*"
       - name: "tags"
         in: "query"
-        description: "File tags"
+        description: "File tag IDs"
         type: "array"
         items:
-          type: "string"
-      # 暂时不实现排序和分页
-      # - name: "orderby"
-      #   in: "query"
-      #   description: "Orderby = name / size / modifyDate"
-      #   type: "string"
-      #   enum:
-      #   - "name"
-      #   - "modifyDate"
-      # - name: "order"
-      #   in: "query"
-      #   description: "ascending / descending"
-      #   type: "string"
-      #   enum:
-      #   - "ascending"
-      #   - "descending"
-      #   default: "ascending"
-      # - name: "page"
-      #   in: "query"
-      #   description: "Page number. Begin from 1."
-      #   type: "integer"
-      # - name: "pagesize"
-      #   in: "query"
-      #   description: "Page size. Default = 10."
-      #   type: "integer"
-      #   default: 10
+          type: "integer"
       responses:
         200:
           description: "successful operation"
@@ -450,6 +525,42 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/File"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+    put:
+      tags:
+      - "file"
+      summary: "Do some commands on files."
+      description:
+        "这个接口用于对一些文件进行一些操作。\n
+        权限：仅对管理员及文件所有者有效。\n
+        对每个文件，除 id 属性外 \n
+        通过提供对应属性的新值来指示进行哪些操作：\n
+        * 重命名 name \n
+        * 移动位置 path \n
+        * 修改标签 tags \n
+        * 修改分享到组 shareToGroups \n\n
+        后端需逐条判断是否有值，是否变化，然后进行操作。对其它属性的修改均无效。\n
+        若全部操作成功，则返回200。否则返回400，描述每个失败操作。\n
+        由于微信小程序不支持PATCH，故改为PUT。然而实质上这是个PATCH。
+        "
+      operationId: "updateFiles"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Updated file object"
+        required: true
+        schema:
+          type: "array"
+          items:
+            $ref: "#/definitions/File"
+      responses:
+        200:
+          description: "successful operation"
         400:
           description: "error"
           schema:
@@ -462,7 +573,6 @@ paths:
       description: "Used for searching files"
       operationId: "getFileById"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -486,7 +596,6 @@ paths:
       description: ""
       operationId: "deleteFile"
       produces:
-      - "application/xml"
       - "application/json"
       parameters:
       - name: "id"
@@ -501,19 +610,23 @@ paths:
           description: "error"
           schema:
             $ref: '#/definitions/ErrorInfo'
-  /file/upload:
+  /file/{id}/data:
     post:
       tags:
       - "file"
-      summary: "Upload file"
-      description: "上传文件"
+      summary: "Upload file or update file data."
+      description: "ID = 0 if uploading a new file"
       operationId: "uploadFile"
       produces:
-      - "application/xml"
       - "application/json"
       consumes:
       - "multipart/form-data"
       parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        description: "File id"
+        type: "string"
       - in: formData
         name: file
         type: file
@@ -531,6 +644,437 @@ paths:
           description: "error"
           schema:
             $ref: '#/definitions/ErrorInfo'
+    get:
+      tags:
+      - "file"
+      summary: "Download file"
+      operationId: "downloadFile"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        description: "File id"
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: file
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /filetag:
+    post:
+      tags:
+      - "filetag"
+      summary: "Create file tag"
+      operationId: "createFileTag"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created file tag"
+        required: true
+        schema:
+          $ref: "#/definitions/FileTag"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/FileTag"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+    get:
+      tags:
+      - "filetag"
+      summary: "Get all file tags"
+      description: ""
+      operationId: "getFileTags"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/FileTag"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /filetag/{id}:
+    get:
+      tags:
+      - "filetag"
+      summary: "Get file tag by ID"
+      description: ""
+      operationId: "getFileTagById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/FileTag"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+    put:
+      tags:
+      - "filetag"
+      summary: "Update file tag"
+      operationId: "updateFileTag"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Updated file tag object"
+        required: true
+        schema:
+          $ref: "#/definitions/FileTag"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/FileTag"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+    delete:
+      tags:
+      - "filetag"
+      summary: "Delete file tag"
+      description: "And remove it in all files"
+      operationId: "deleteFileTag"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /comment:
+    get:
+      tags:
+      - "social"
+      summary: "Get all comments about the file"
+      operationId: "getFileComments"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "fileID"
+        in: "query"
+        required: true
+        description: "File id"
+        type: "string"
+      - name: "type"
+        in: "query"
+        description: "Comment type"
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: '#/definitions/Comment'
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+    post:
+      tags:
+      - "social"
+      summary: "Post new comment about the file"
+      operationId: "postComment"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: '#/definitions/Comment'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: '#/definitions/Comment'
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+    put:
+      tags:
+      - "social"
+      summary: "Update comment"
+      operationId: "updateComment"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: '#/definitions/Comment'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: '#/definitions/Comment'
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /comment/{id}:
+    delete:
+      tags:
+      - "social"
+      summary: "Delete the comment"
+      operationId: "deleteComment"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        description: "Comment id"
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /user/{id}/follower:
+    get:
+      tags:
+      - "social"
+      summary: "Get all followers of the user"
+      operationId: "getUserFollower"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+              description: "UserIDs"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /user/{id}/following:
+    get:
+      tags:
+      - "social"
+      summary: "Get all followings of the user"
+      operationId: "getUserFollowing"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+              description: "UserIDs"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /user/{id}/following/{othersID}:
+    post:
+      tags:
+      - "social"
+      summary: "Follow another user"
+      operationId: "followUser"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+      - name: "othersID"
+        in: "path"
+        required: true
+        type: "integer"
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+    delete:
+      tags:
+      - "social"
+      summary: "Unfollow another user"
+      operationId: "unfollowUser"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+      - name: "othersID"
+        in: "path"
+        required: true
+        type: "integer"
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /event:
+    get:
+      tags:
+      - "social"
+      summary: "Get all events of the user after a given time"
+      operationId: "getUserEvents"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "userID"
+        in: "query"
+        required: true
+        type: "integer"
+      - name: "afterTime"
+        in: "query"
+        type: "string"
+        format: "date-time"
+        description: "Use last login time for default."
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: '#/definitions/Event'
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /statistic/user/{id}:
+    get:
+      tags:
+      - "statistic"
+      summary: "Get user statistic info"
+      operationId: "getUserStatistic"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "integer"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserStat"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /statistic/file/{id}:
+    get:
+      tags:
+      - "statistic"
+      summary: "Get file statistic info"
+      operationId: "getFileStatistic"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/FileStat"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
+  /image/similar:
+    post:
+      tags:
+      - "other"
+      summary: "Search similar image by given image"
+      operationId: "searchSimilarImage"
+      produces:
+      - "application/json"
+      consumes:
+      - "multipart/form-data"
+      parameters:
+      - in: formData
+        name: imageFile
+        type: file
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/File"
+            description: "File infos of all similar image"
+        400:
+          description: "error"
+          schema:
+            $ref: '#/definitions/ErrorInfo'
 
 definitions:
   File:
@@ -538,17 +1082,17 @@ definitions:
     properties:
       id:
         type: "string"
+      ownerID:
+        type: "integer"
+        format: "int64"
       isDir:
         type: "boolean"
       name:
         type: "string"
-        description: "文件名"
+        description: "File name"
       path:
         type: "string"
-        description: "文件绝对路径，不含文件名"
-      url:
-        type: "string"
-        description: "Download link"
+        description: "Absolute path, name is not included"
       md5:
         type: "string"
       thumbnails:
@@ -568,6 +1112,13 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/FileTag"
+      shareToGroups:
+        type: "array"
+        items:
+          $ref: "#/definitions/UserGroup"
+        description: "Only available when get by admin or owner"
+      videoInfo:
+        $ref: "#/definitions/VideoInfo"
     xml:
       name: "File"
   UserGroup:
@@ -578,6 +1129,10 @@ definitions:
         format: "int64"
       name:
         type: "string"
+      color:
+        type: "string"
+        format: "color"
+        description: "like: #FF9900"
     xml:
       name: "UserGroup"
   User:
@@ -598,13 +1153,12 @@ definitions:
         type: "string"
       phone:
         type: "string"
-      image:
-        type: "string"
-        description: "头像图片地址"
       groups:
         type: "array"
         items:
           $ref: "#/definitions/UserGroup"
+      space:
+        $ref: "#/definitions/SpaceInfo"
     xml:
       name: "User"
   FileTag:
@@ -617,8 +1171,109 @@ definitions:
         type: "string"
       color:
         type: "string"
+        format: "color"
     xml:
       name: "FileTag"
+  Comment:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      fileID:
+        type: "string"
+      userID:
+        type: "integer"
+        format: "int64"
+      date:
+        type: "string"
+        format: "date-time"
+      type:
+        type: "string"
+        enum:
+        - "star"
+        - "score"
+        - "comment"
+      star:
+        type: "boolean"
+      score:
+        type: "integer"
+        description: "1-5"
+      comment:
+        type: "string"
+    xml:
+      name: "Comment"
+  Event:
+    type: "object"
+    properties:
+      date:
+        type: "string"
+        format: "date-time"
+      content:
+        type: "string"
+        description: "For now, just describe events in plain string ..."
+  SpaceInfo:
+    type: "object"
+    properties:
+      totalSize:
+        type: "integer"
+      usedSize:
+        type: "integer"
+  VideoInfo:
+    type: "object"
+    properties:
+      duration:
+        type: "string"
+      colorChannel:
+        type: "string"
+      bitRate:
+        type: "string"
+      resolution:
+        type: "string"
+      aspectRatio:
+        type: "string"
+  UserStat:
+    type: "object"
+    properties:
+      uploadCount:
+        type: "integer"
+      downloadCount:
+        type: "integer"
+      chartData:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            date:
+              type: "string"
+              format: "date-time"
+            uploadCount:
+              type: "integer"
+            downloadCount:
+              type: "integer"
+            uploadSize:
+              type: "integer"
+            downloadSize:
+              type: "integer"
+  FileStat:
+    type: "object"
+    properties:
+      previewCount:
+        type: "integer"
+      downloadCount:
+        type: "integer"
+      chartData:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            date:
+              type: "string"
+              format: "date-time"
+            previewCount:
+              type: "integer"
+            downloadCount:
+              type: "integer"
   ErrorInfo:
     type: "object"
     properties:
