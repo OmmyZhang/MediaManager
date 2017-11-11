@@ -12,7 +12,7 @@ from .models import Notice
 class Remainder(APIView):
     def get(self, request, format=None):
         get = request.GET
-        user_id = get['userID']
+        user_id = request.user.id
         after_time = get['afterTime']
         notice_list = getList(user_id, after_time)
         return Response(notice_list)
