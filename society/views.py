@@ -7,6 +7,7 @@ from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import random
+import remainder.view
 #More import if needed
 
 
@@ -19,6 +20,7 @@ class followSb(APIView):   #idone follow idtwo or just cancel
         #if PeopleFollowPeople.objects.filter(followee = idone, follower = idtwo):
         #No need to check this if frontend is correct
         PeopleFollowPeople.objects.create(followee = idone, follower = idtwo)
+        remainder.views.sentNotice(idtwo,  str(idone) + 'has followed you! ');
         return Response(status=status.HTTP_200_OK)
     def delete(self, request, format = None):
         body = request.data
