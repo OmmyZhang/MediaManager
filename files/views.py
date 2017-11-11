@@ -1,12 +1,106 @@
 #-*-coding:UTF-8-*-
 from django.http import HttpResponseRedirect,HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 import os,time,shutil
 import re
 import shutil
 from os import path
 from django.http import StreamingHttpResponse
-from .models import FileToTag,StFile,StTag
+from .models import FileToTag,StFile,StTag,FileSerializer
+
+from rest_framework import status,permissions,serializers
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny,IsAdminUser
+
+class IsAdminOrAvailable(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return available_to_file(request.user, view.kwargs['id'])
+
+class FileList(APIView):
+    def get(self, request, format=None):
+        body = request.GET
+
+        if 'path' in body:
+            return Response([
+                format_file(ff.id)
+                for ff in StFile.objects.filter(path = request.GET['path'])
+                if available_to_file(request.user, ff.id)
+                ])
+
+        if 'name' in body:
+            rex = body['name']
+            return Response([
+                format_file(ff.id)
+                for ff in StFile.objects.all()
+                if (re.match(rex,ff.name) is not None) and available_to_file(request.user, ff.id)
+                ])
+
+        
+        return Response({'info':'query Nothing'},
+                status=status.HTTP_400_BAD_REQUEST)
+        
+
+    def post(self, request, format=None):
+        body = request.data
+        body['owner'] = request.user.id
+        body['createDate'] = body['modifyDate'] = time.strftime("%Y-%m-%dT%H:%m:%S")
+        print(body['createDate'])
+        body['size'] = 0
+        body['url'] = '/file/download/'
+
+        serializer = FileSerializer(data=body)
+        if serializer.is_valid():
+            serializer.save()
+            id = serializer.data['id']
+            f = get_file(id)
+            f.url += str(id) + '/'
+            f.save()
+            return Response(format_file(id),
+                    status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST)
+
+class FileById(APIView):
+    permission_classes = (IsAdminOrAvailable,)
+
+    def get(self, request, id, format=None):
+        return Response(format_file(id))
+
+    def delete(self, request, id, format=None):
+        f = get_file(id)
+        f.delete()
+        FileToTag.objects.filter(file_id = id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+#-------------------------
+
+def available_to_file(u, fid):
+    f = get_file(fid)
+    if f is None:
+        return False
+    if u.is_superuser:
+        return True
+    uid = u.id
+    owner = f.owner
+    from group.views import user_groups,check_Belong
+    for g in user_groups(uid):
+        if check_Belong(owner, g):
+            return True
+    return False
+
+def format_file(id):
+    f = get_file(id)
+    serializer = FileSerializer(f)
+    data = serializer.data
+    data['tags'] = [ {
+                    'id':tid,
+                    'name':get_tag(tid).name
+                    }
+                    for tid in file_tags(id)
+                    ]
+    return data
 
 def create_FileToTag(fi,ti): # create a relationship between file and tag
     assert get_file(fi) is not None , "Wrong file id"

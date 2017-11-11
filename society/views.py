@@ -3,66 +3,128 @@ from __future__ import unicode_literals
 
 from django.shortcuts import render
 from .models import PeopleFollowPeople, PeopleStarFile, PeopleComment
+from rest_framework import status, permissions
+from rest_framework.views import APIView
+from rest_framework.response import Response
+import random
+#More import if needed
 
-def followSb(idone, idtwo):   #idone follow idtwo or just cancel
+
+class followSb(APIView):   #idone follow idtwo or just cancel
     #followee follow the follower, this is not halal
-    if PeopleFollowPeople.object.filter(followee = idone, follower = idtwo):
-        PeopleFollowPeople.object.filter(followee = idone, follower = idtwo).delete()
-        return False
-    else:
-        PeopleFollowPeople.object.create(followee = idone, follower = idtwo)
+    def post(self, request, format = None):
+        body = request.data
+        idone = body['id']
+        idtwo = body['othersID']
+        #if PeopleFollowPeople.objects.filter(followee = idone, follower = idtwo):
+        #No need to check this if frontend is correct
+        PeopleFollowPeople.objects.create(followee = idone, follower = idtwo)
+        return Response(status=status.HTTP_200_OK)
+    def delete(self, request, format = None):
+        body = request.data
+        idone = body['id']
+        idtwo = body['othersID']
+        PeopleFollowPeople.objects.filter(followee = idone, follower = idtwo).delete()
+        return Response(status=status.HTTP_200_OK)
         # JUMPING : WE CAN SEND A MESSAGE HERE
-    return True
 
-def getFollowerList(id): #get all the people this id followed
-    f = []
-    for id in PeopleFollowPeople.object.filter(followee = id):
-        f.append(id.follower)
-    return f
+class getFollowerList(APIView):
+    def get(self, request, format = None):
+        body = request.data
+        pid = body['id']
+        f = []
+        for pid in PeopleFollowPeople.objects.filter(followee = id):
+            f.append(pid.follower)
+        return Response(f)
 
-def getFolloweeList(id): # get all the follower
-    f = []
-    for id in PeopleFollowPeople.object.filter(follower = id):
-        f.append(id.followee)
-    return f
+class getFolloweeList(APIView): # get all the follower
+    def get(self, request, format = None):
+        body = request.data
+        pid = body['id']
+        f = []
+        for pid in PeopleFollowPeople.objects.filter(followee = id):
+            f.append(pid.follower)
+        return Response(f)
 
 def starFile(id, file): #idone star fileone or just cancel
-    if PeopleStarFile.object.filter(people = id, fileid = file):
-        PeopleStarFile.object.filter(people=id, fileid=file).delete()
+    if PeopleStarFile.objects.filter(people = id, fileid = file):
+        PeopleStarFile.objects.filter(people = id, fileid=file).delete()
         return False
     else:
-        PeopleStarFile.object.create(people=id, fileid=file)
+        PeopleStarFile.objects.create(people=id, fileid=file)
         # JUMPING : WE CAN SEND A MESSAGE HERE
     return True
 
 def getStarList(id): #get all the file stared
     f = []
-    for file in PeopleStarFile.object.filter(people = id):
+    for file in PeopleStarFile.objects.filter(people = id):
         f.append(file)
     return f
 
 def getAllStarer(file): #get all the id stared the file
     f = []
-    for id in PeopleStarFile.object.filter(fileid = file):
-        f.append(id)
+    for pid in PeopleStarFile.objects.filter(fileid = file):
+        f.append(pid)
     return
 
-def postComment(id, file, comment): #id post a comment about file
-    if (len(comment) > 200):
-        return False
-    #Send ERROR HERE
-    PeopleComment.object.create(people = id, fileid = file, comment = comment)
-    # JUMPING : WE CAN SEND A MESSAGE HERE
-    return True
+class deleteComment(APIView):
+    def delete(self, request, format = None):
+        body = request.data
+        t_commentid = body['commentid']
+        PeopleComment.objects.filter(commentid=t_commentid).delete()
+        return Response(status=status.HTTP_200_OK)
 
-def getComment(file): #get all comment about that tile
-    f = []
-    for comment in PeopleComment.object.filter(fileid = file):
-        infotuple = (comment.id, comment.comment)
-        f.append(infotuple)
-    return f
+
+class commentDealer(APIView):
+    #no permission check here ?
+    def post(self, request, format = None):
+        body = request.data
+        t_uesrid = body['userId']
+        t_fileid = body['fileId']
+        t_date = body['date']
+        t_type = int(body['type'])
+        if (t_type == 1):
+            t_comment = body['comment']
+            if len(t_comment) > 200:
+                return Response({"info":"Comment too long"},
+                        status=status.HTTP_400_BAD_REQUEST)
+            # JUMPING : WE CAN SEND A MESSAGE HERE
+        if (t_type == 2):
+            pass
+            # JUMPING : WE CAN SEND A MESSAGE HERE
+        if (t_type == 3):
+            # JUMPING : WE CAN UPDATE FILE INFO HERE
+            # JUMPING : WE CAN SEND A MESSAGE HERE
+            pass
+        t_commentid = random.randint(1, 2147483647)
+        while (True):
+            if PeopleComment.objects.filter(commentid = t_commentid):
+                break
+            t_commentid = random.randint(1, 2147483647)
+        PeopleComment.objects.create(commentid = t_commentid, userid = t_userid,
+                                     fileid = t_fileid      , date = t_date,
+                                     type = t_type          , comment = body['comment'],
+                                     star = body['star']    , score = body['score'])
+        return Response(status=status.HTTP_200_OK)
+
+    def get(self, request, format = None):
+        body = request.data
+        t_fileid = body['fileId']
+        t_type = body['type']
+        f = []
+        for comment in PeopleComment.objects.filter(fileid = t_fileid, type = t_type):
+            a_comment = {}
+            a_comment['commentid'] = comment.commentid
+            a_comment['userid'] = comment.userid
+            a_comment['fileid'] = comment.fileid
+            a_comment['date'] = comment.date
+            a_comment['type'] = comment.type
+            a_comment['star'] = comment.star
+            a_comment['score'] = comment.score
+            a_comment['comment'] = comment.comment
+            f.append(a_comment)
+        return Response(f)
 
 def removeFile(file): #remove the star and comment about a file
-    PeopleStarFile.object.filter(fileid = file).delete()
-    PeopleComment.object.filter(fileid = file).delete()
-    return True
+    PeopleStarFile.objects.filter(fileid = file).delete()
+    PeopleComment.objects.filter(fileid = file).delete()
