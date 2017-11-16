@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'remainder'
+    'remainder.apps.RemainderConfig'
 ]
 
 REST_FRAMEWORK = {
