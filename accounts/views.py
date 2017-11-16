@@ -75,7 +75,6 @@ class Login(APIView):
         user = authenticate(username=name,password=passwd)
         token = '2345678'  # TODO token
         # TODO info: 用户名不存在 / 密码错误
-        # TODO bug 后创建用户无法登陆？
         if user is not None:
             login(request,user)
             return Response({'token': token, 'userID': user.id})
@@ -132,6 +131,24 @@ class UserById(APIView):
         else:
             return Response({'info':'No this user'},
                     status=status.HTTP_400_BAD_REQUEST)
+
+class Passwd(APIView):
+    permission_classes = (IsAdminOrSelf,)
+
+    def post(self, request, id, format=None):
+        body = request.data
+        oldP = body['oldPassword']
+        newP = body['newPassword']
+
+        un = get_user(id).username
+        testU  = authenticate(username=un,password=oldP)
+        if testU is None:
+            return Response({'info':'wrong old password'},
+                    status=status.HTTP_400_BAD_REQUEST);
+        else:
+            testU.set_password(newP);
+            testU.save();
+            return Response()
 
 
 #-------------------------------------
