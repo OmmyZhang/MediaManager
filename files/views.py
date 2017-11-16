@@ -16,7 +16,7 @@ from rest_framework.permissions import AllowAny,IsAdminUser
 
 class IsAdminOrAvailable(permissions.BasePermission):
     def has_permission(self, request, view):
-        return available_to_file(request.user, view.kwargs['id'])
+        return available_to_file(request.user, int(view.kwargs['id']))
 
 class FileList(APIView):
     def get(self, request, format=None):
@@ -44,23 +44,63 @@ class FileList(APIView):
 
     def post(self, request, format=None):
         body = request.data
-        body['owner'] = request.user.id
-        body['createDate'] = body['modifyDate'] = time.strftime("%Y-%m-%dT%H:%m:%S")
-        print(body['createDate'])
-        body['size'] = 0
-        body['url'] = '/file/download/'
+        body['ownerID'] = request.user.id
+        body['createDate'] = time.strftime("%Y-%m-%dT%H:%m:%S")
+        
+        id, resp = create_file_and_resp(body)
+        return resp
+    
+    def put(self, request, format=None):
+       
+        err = []
+        for body in request.data:
+            id = body['id']
+            if not available_to_file(request.user, id):
+                err.append({
+                    'id':id,
+                    'error':'no permission'
+                    })
+                continue
 
-        serializer = FileSerializer(data=body)
-        if serializer.is_valid():
-            serializer.save()
-            id = serializer.data['id']
             f = get_file(id)
-            f.url += str(id) + '/'
-            f.save()
-            return Response(format_file(id),
+            
+            serializer = FileSerializer(f, data = body, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                err.append({
+                    'id':id,
+                    'error':serializer.errors
+                    })
+
+            if 'tags' in body:
+                FileToTag.objects.filter(file_id = id).delete()
+                for t in body['tags']:
+                    create_FileToTag(id, t['id'])
+            
+            if 'videoInfo' in body:
+                pass
+        
+        if err:
+            return Response({'info':err},
+                    status=status.HTTP_400_BAD_REQUEST)
+        return  Response()
+
+def create_file_and_resp(data):
+    data['modifyDate'] = time.strftime("%Y-%m-%dT%H:%m:%S")
+    data['size'] = 0
+
+    serializer = FileSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        id = serializer.data['id'] 
+        return id, Response(format_file(id),
                     status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,
+        
+    return None, Response(serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST)
+
+    
 
 class FileById(APIView):
     permission_classes = (IsAdminOrAvailable,)
@@ -73,20 +113,66 @@ class FileById(APIView):
         f.delete()
         FileToTag.objects.filter(file_id = id).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+
+class FileData(APIView):
+    permission_classes = (IsAdminOrAvailable,)
+
+    def post(self, request, id, format=None):
+        
+        body = request.data
+
+        f = request.FILES['file']
+        path = body['path']
+
+        fname = request.user.username + ':' + f.name + '.part_' + str(time.time())
+        with open('data/'+fname, 'wb+') as des:
+            for chunk in f.chunks():
+                des.write(chunk)
+
+        data = {
+                'ownerID': request.user.id,
+                'name': f.name,
+                'createDate': time.strftime("%Y-%m-%dT%H:%m:%S"),
+                'path': path,
+                'isDir': False
+                }
+
+        id, resp = create_file_and_resp(data)
+    
+        os.rename('data/'+fname,'data/'+str(id))
+
+        return resp
+
+    def get(self, request, id, format=None):
+        
+        f = get_file(id)
+
+        resp = StreamingHttpResponse(file_iterator('data/'+ str(id)))
+        resp['Content-Type'] = 'application/octet-stream'
+        resp['Content-Disposition'] = 'attachment;filename="%s"' % f.name.encode('utf-8').decode('ISO-8859-1')
+
+        return resp
 
 #-------------------------
 
 def available_to_file(u, fid):
+    if fid == 0:
+        return True
+
     f = get_file(fid)
     if f is None:
         return False
-    if u.is_superuser:
+    
+    if u.is_superuser or u.id == f.ownerID:
         return True
+    
     uid = u.id
-    owner = f.owner
-    from group.views import user_groups,check_Belong
+    
+    from group.views import user_groups
     for g in user_groups(uid):
-        if check_Belong(owner, g):
+        if check_FileToTag(fid, g):
             return True
     return False
 
@@ -143,14 +229,14 @@ def get_file(id):
     except:
         return None
 
-def files_here(owner,path):
+def files_here(ownerID,path):
     fh = []
-    for ff in StFile.objects.filter(owner = owner, path = path):
+    for ff in StFile.objects.filter(ownerID = ownerID, path = path):
         fh.append(ff.id)
     return fh
 
-def new_file(owner, path,name):
-    newF = StFile(owner = owner, path = path , name = name)
+def new_file(ownerID, path,name):
+    newF = StFile(ownerID = ownerID, path = path , name = name)
     newF.save()
     return newF.id
 
