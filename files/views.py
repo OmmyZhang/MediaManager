@@ -55,7 +55,19 @@ class FileList(APIView):
                 for ff in StFile.objects.all()
                 if (re.match(rex,ff.name) is not None) and available_to_file(request.user, ff.id)
                 ])
-
+        
+        if 'tags[]' in body:
+            tags = body.getlist('tags[]')
+            f = []
+            for i in tags:
+                fi = tag_files(i)
+                f = f + fi
+            
+            return Response([
+                format_file(ff)
+                for ff in set(f)
+                if available_to_file(request.user, ff)
+                ])
         
         return Response({'info':'query Nothing'},
                 status=status.HTTP_400_BAD_REQUEST)
@@ -95,6 +107,11 @@ class FileList(APIView):
             if 'tags' in body:
                 FileToTag.objects.filter(file_id = id).delete()
                 for t in body['tags']:
+                    create_FileToTag(id, t['id'])
+            
+            if 'shareToGroups' in body:
+                FileToTag.objects.filter(file_id = id).delete()
+                for t in body['shareToGroups']:
                     create_FileToTag(id, t['id'])
             
             if 'videoInfo' in body:
@@ -199,12 +216,21 @@ def format_file(id):
     f = get_file(id)
     serializer = FileSerializer(f)
     data = serializer.data
-    data['tags'] = [ {
-                    'id':tid,
-                    'name':get_tag(tid).name
-                    }
-                    for tid in file_tags(id)
-                    ]
+    data['tags'] =  []
+    data['shareToGroups'] = []
+
+    for tid in file_tags(id):
+        tt = get_tag(tid)
+        dic = {
+                'id':tid,
+                'name': tt.name,
+                'color':tt.color
+            }
+        if tt.isGroup:
+            data['shareToGroups'].append(dic)
+        else:
+            data['tags'].append(dic)
+
     return data
 
 def create_FileToTag(fi,ti): # create a relationship between file and tag
