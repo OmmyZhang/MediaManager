@@ -7,7 +7,7 @@ import os
 class SampleTestCase(TestCase):
     def setUp(self):
         pass
-    
+    '''
     def test_sample1(self):
         """Just a sample test"""
         usr = create_user({
@@ -64,7 +64,7 @@ class SampleTestCase(TestCase):
         
         print(files_here(usr,'/photo/'))
     
-    '''
+    
     def test_mkdir(self):
         src = "data/debug"
         name = "test"

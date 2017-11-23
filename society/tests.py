@@ -9,7 +9,7 @@ import os
 class SampleTestCase(TestCase):
     def setUp(self):
         pass
-
+    '''
     def test_sample1(self):
         print(followSb(1, 2))
         print(followSb(1, 2))
@@ -25,5 +25,6 @@ class SampleTestCase(TestCase):
         Temp2 = Temp[0]
         print (Temp2[1])
         removeFile(2)
+    '''
 # Create your tests here.
 
