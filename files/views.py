@@ -78,7 +78,7 @@ class FileList(APIView):
         body['ownerID'] = request.user.id
         body['createDate'] = time.strftime("%Y-%m-%dT%H:%m:%S")
         
-        id, resp = create_file_and_resp(body)
+        id, resp = create_file_and_resp(body,None)
         return resp
     
     def put(self, request, format=None):
@@ -122,9 +122,9 @@ class FileList(APIView):
                     status=status.HTTP_400_BAD_REQUEST)
         return  Response()
 
-def create_file_and_resp(data):
+def create_file_and_resp(data,fname):
     data['modifyDate'] = time.strftime("%Y-%m-%dT%H:%m:%S")
-    data['size'] = 0
+    data['size'] = os.path.getsize(fname)
 
     serializer = FileSerializer(data=data)
     if serializer.is_valid():
@@ -166,6 +166,16 @@ class FileData(APIView):
         with open('data/'+fname, 'wb+') as des:
             for chunk in f.chunks():
                 des.write(chunk)
+        
+        if int(pk) > 0:
+            os.rename('data/'+fname, 'data/'+str(pk))
+            oldf = get_file(pk)
+            oldf.modifyDate = time.strftime("%Y-%m-%dT%H:%m:%S")
+            oldf.name = f.name
+            oldf.size = os.path.getsize('data/'+str(pk))
+            oldf.save()
+            return Response(format_file(pk))
+
 
         data = {
                 'ownerID': request.user.id,
@@ -175,7 +185,7 @@ class FileData(APIView):
                 'isDir': False
                 }
 
-        id, resp = create_file_and_resp(data)
+        id, resp = create_file_and_resp(data, 'data/'+fname)
     
         os.rename('data/'+fname,'data/'+str(id))
 
