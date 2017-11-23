@@ -7,8 +7,9 @@ import re
 import shutil
 from os import path
 from django.http import StreamingHttpResponse
-from .models import FileToTag,StFile,StTag,FileSerializer
-
+from .models import FileToTag,StFile,StTag,FileSerializer,TagSerializer
+from rest_framework import mixins
+from rest_framework import generics
 from rest_framework import status,permissions,serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -16,7 +17,25 @@ from rest_framework.permissions import AllowAny,IsAdminUser
 
 class IsAdminOrAvailable(permissions.BasePermission):
     def has_permission(self, request, view):
-        return available_to_file(request.user, int(view.kwargs['id']))
+        return available_to_file(request.user, int(view.kwargs['pk']))
+
+class TagList(mixins.ListModelMixin,
+              mixins.CreateModelMixin,
+              generics.GenericAPIView):
+
+    queryset = StTag.objects.filter(isGroup = False)
+    serializer_class = TagSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        request.data['isGroup'] = False
+        return self.create(request, *args, **kwargs)
+
+class TagById(generics.RetrieveUpdateDestroyAPIView):
+    queryset = StTag.objects.filter(isGroup = False)
+    serializer_class = TagSerializer
 
 class FileList(APIView):
     def get(self, request, format=None):
@@ -105,13 +124,13 @@ def create_file_and_resp(data):
 class FileById(APIView):
     permission_classes = (IsAdminOrAvailable,)
 
-    def get(self, request, id, format=None):
-        return Response(format_file(id))
+    def get(self, request, pk, format=None):
+        return Response(format_file(pk))
 
-    def delete(self, request, id, format=None):
-        f = get_file(id)
+    def delete(self, request, pk, format=None):
+        f = get_file(pk)
         f.delete()
-        FileToTag.objects.filter(file_id = id).delete()
+        FileToTag.objects.filter(file_id = pk).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 
@@ -119,7 +138,7 @@ class FileById(APIView):
 class FileData(APIView):
     permission_classes = (IsAdminOrAvailable,)
 
-    def post(self, request, id, format=None):
+    def post(self, request, pk, format=None):
         
         body = request.data
 
@@ -145,9 +164,9 @@ class FileData(APIView):
 
         return resp
 
-    def get(self, request, id, format=None):
+    def get(self, request, pk, format=None):
         
-        f = get_file(id)
+        f = get_file(pk)
 
         resp = StreamingHttpResponse(file_iterator('data/'+ str(id)))
         resp['Content-Type'] = 'application/octet-stream'
@@ -239,11 +258,6 @@ def new_file(ownerID, path,name):
     newF = StFile(ownerID = ownerID, path = path , name = name)
     newF.save()
     return newF.id
-
-def new_tag(name,isGroup = False):
-    newT = StTag(name = name, isGroup = isGroup)
-    newT.save()
-    return newT.id
 
 def file_show(user_name):
     now_user_name = user_name

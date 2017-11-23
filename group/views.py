@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from .models import Belong
-from files.models import StTag
-from files.views import new_tag,get_tag
+from files.models import StTag,TagSerializer
+from rest_framework import mixins
+from rest_framework import generics
 from rest_framework import status,permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -12,65 +13,84 @@ from rest_framework.permissions import AllowAny,IsAdminUser
 
 class IsAdminOrMemeber(permissions.BasePermission):
     def has_permission(self, request, view):
-        print(request.user.id,view.kwargs['id'])
-        return request.user.is_superuser or check_Belong(request.user.id, view.kwargs['id'])
+        return request.user.is_superuser or check_Belong(request.user.id, view.kwargs['pk'])
 
-class TheGroup(APIView):
+class TheGroup(mixins.ListModelMixin,
+               mixins.CreateModelMixin,
+               generics.GenericAPIView):
+
     permission_classes = (IsAdminUser,)
+    queryset = StTag.objects.filter(isGroup = True)
+    serializer_class = TagSerializer
 
-    def get(self, request, format=None):
-        return Response([{
-            'id':g.id,
-            'name':g.name
-            }
-            for g in StTag.objects.filter(isGroup = True)
-            ])
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
-    def post(self, request, format=None):
-        body = request.data
-        id = new_tag(body['name'], True)
-        return Response({
-            'id':id,
-            'name':body['name']
-            })
-  
+    def post(self, request, *args, **kwargs):
+        request.data['isGroup'] = True
+        return self.create(request, *args, **kwargs)
 
-class GroupById(APIView):
+
+class GroupById(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAdminOrMemeber,)
+    queryset = StTag.objects.filter(isGroup = True)
+    serializer_class = TagSerializer
+    
+    
 
-    def get(self, request, id, format=None):
-        g = get_tag(id)
-        if (g is not None) and  g.isGroup:
-            return Response({
-                'id':g.id,
-                'name':g.name
-                })
-        else:
-            return Response({'info':'Wrong id'},
-                    status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, id ,format=None):
-        g = get_tag(id)
-        body = request.data
-        if (g is not None) and  g.isGroup:
-            g.name = body['name']
-            g.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response({'info':'Wrong id'},
-                    status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, id ,format=None):
-        g = get_tag(id)
-        body = request.data
-        if (g is not None) and  g.isGroup:
-            g.delete()
-            Belong.objects.filter(group_id=id).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response({'info':'Wrong id'},
-                    status=status.HTTP_400_BAD_REQUEST)
-
+#    def get(self, request, format=None):
+#        return Response([{
+#            'id':g.id,
+#            'name':g.name
+#            }
+#            for g in StTag.objects.filter(isGroup = True)
+#            ])
+#
+#    def post(self, request, format=None):
+#        body = request.data
+#        id = new_tag(body['name'], True)
+#        return Response({
+#            'id':id,
+#            'name':body['name']
+#            })
+#  
+#
+#class GroupById(APIView):
+#    permission_classes = (IsAdminOrMemeber,)
+#
+#    def get(self, request, id, format=None):
+#        g = get_tag(id)
+#        if (g is not None) and  g.isGroup:
+#            return Response({
+#                'id':g.id,
+#                'name':g.name
+#                })
+#        else:
+#            return Response({'info':'Wrong id'},
+#                    status=status.HTTP_400_BAD_REQUEST)
+#
+#    def put(self, request, id ,format=None):
+#        g = get_tag(id)
+#        body = request.data
+#        if (g is not None) and  g.isGroup:
+#            g.name = body['name']
+#            g.save()
+#            return Response(status=status.HTTP_204_NO_CONTENT)
+#        else:
+#            return Response({'info':'Wrong id'},
+#                    status=status.HTTP_400_BAD_REQUEST)
+#
+#    def delete(self, request, id ,format=None):
+#        g = get_tag(id)
+#        body = request.data
+#        if (g is not None) and  g.isGroup:
+#            g.delete()
+#            Belong.objects.filter(group_id=id).delete()
+#            return Response(status=status.HTTP_204_NO_CONTENT)
+#        else:
+#            return Response({'info':'Wrong id'},
+#                    status=status.HTTP_400_BAD_REQUEST)
+#
 
 #-------------------------------------------
 def create_Belong(ui,gi): # create a relationship between user and group

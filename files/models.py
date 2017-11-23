@@ -14,8 +14,9 @@ class FileToTag(models.Model):
 class StTag(models.Model):
     name = models.CharField(max_length = 100)
     isGroup = models.BooleanField(default = False)
+    color = models.CharField(max_length=20)
     def __str__(self):
-        return (str(self.id) + ' is ' +self.name)
+        return str(self.id) + ' is ' +self.name + ' --> ' + self.color
 
 class StFile(models.Model):
     ownerID = models.IntegerField(default = -1)
@@ -33,5 +34,10 @@ class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StFile
         fields = ('id', 'ownerID', 'path','name','isDir','modifyDate','createDate','size')
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StTag
+        fields = ('id', 'name', 'isGroup', 'color')
 
 
