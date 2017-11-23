@@ -53,9 +53,8 @@ class SampleTestCase(TestCase):
         pass
 
     def test_sample1(self):
-        request = factory.post(FollowPath1)
-        view = followSb.as_view()
-        response = view(request)
+        
+
 '''
     def test_sample2(self):
         request = factory.post(FollowPath2)

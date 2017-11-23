@@ -70,6 +70,8 @@ def getAllStarer(file): #get all the id stared the file
         f.append(pid)
     return
 
+
+
 class deleteComment(APIView):
     def delete(self, request, format = None):
         body = request.data
@@ -127,6 +129,25 @@ class commentDealer(APIView):
             a_comment['comment'] = comment.comment
             f.append(a_comment)
         return Response(f)
+    
+    def delete(self, request, _id, format = None):
+        body = request.data
+        t_commentid = _id
+        PeopleComment.objects.filter(commentid=t_commentid).delete()
+        return Response(status=status.HTTP_200_OK)
+    
+    def put(self,request,format=None):
+        body = request.data
+        t_commentid = body['id']
+        _comment = PeopletComment.objects.filter(commentid=t_commentid)
+        _comment.fileid = body['fileID']
+        _comment.userid = body['userID']
+        _comment.date = body['date']
+        _comment.type = body['type']
+        _comment.star = body['star']
+        _comment.score = body['score']
+        _comment.comment = body['comment']
+        return Response(status = status.HTTP_200_OK)
 
 def removeFile(file): #remove the star and comment about a file
     PeopleStarFile.objects.filter(fileid = file).delete()
