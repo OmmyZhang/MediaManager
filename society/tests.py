@@ -51,15 +51,15 @@ CommentJson_Comment['type'] = 'comment'
 class SampleTestCase(TestCase):
     def setUp(self):
         pass
+
     def test_sample1(self):
-        request = factory.post(FollowPath1, NullJson, format='json')
-#force_authenticate(request, user=user)  #This is not necessary
+        request = factory.post(FollowPath1)
         view = followSb.as_view()
         response = view(request)
-
+'''
     def test_sample2(self):
-        request = factory.post(FollowPath2, NullJson, format='json')
-#force_authenticate(request, user=user)  #This is not necessary
+        request = factory.post(FollowPath2)
+        #force_authenticate(request, user=user)  #This is not necessary
         view = followSb.as_view()
         response = view(request)
 
@@ -106,7 +106,6 @@ class SampleTestCase(TestCase):
         response = view(request)
 
 
-    '''
     def test_sample1(self):
         print(followSb(1, 2))
         print(followSb(1, 2))

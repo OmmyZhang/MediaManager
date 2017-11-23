@@ -32,4 +32,5 @@ urlpatterns = [
     url(r'^file/?',include('files.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^admin/', admin.site.urls),
+    url(r'^society/?',include('society.urls'))
 ]

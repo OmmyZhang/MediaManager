@@ -14,6 +14,7 @@ import remainder.views
 class followSb(APIView):   #idone follow idtwo or just cancel
     #followee follow the follower, this is not halal
     def post(self, request, format = None):
+        print("--------------------------------$$$$$$$$$$$$$$$$$$$$$$$$$test")
         body = request.data
         idone = body['id']
         idtwo = body['othersID']
