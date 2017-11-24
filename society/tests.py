@@ -51,7 +51,6 @@ CommentJson_Comment['type'] = 'comment'
 class SampleTestCase(TestCase):
     def setUp(self):
         pass
-    def test_
 '''
     def test_sample2(self):
         request = factory.post(FollowPath2)
@@ -76,32 +75,29 @@ class SampleTestCase(TestCase):
        # force_authenticate(request, user=user)  #This is not necessary
         view = followSb.as_view()
         response = view(request)
+'''
 
     def test_sample6(self):
-        request = factory.put(CommentPath, CommentJson_Comment, format='json')
-    #force_authenticate(request, user=user)  #This is not necessary
-        view = followSb.as_view()
+        request = factory.post(CommentPath, CommentJson_Comment, format='json')
+        view = comment.as_view()
         response = view(request)
 
     def test_sample7(self):
-        request = factory.put(CommentPath, CommentJson_Star, format='json')
-#force_authenticate(request, user=user)  #This is not necessary
-        view = followSb.as_view()
+        request = factory.post(CommentPath, CommentJson_Star, format='json')
+        view = comment.as_view()
         response = view(request)
 
     def test_sample8(self):
-        request = factory.put(CommentPath, CommentJson_Score, format='json')
-#force_authenticate(request, user=user)  #This is not necessary
-        view = followSb.as_view()
+        request = factory.post(CommentPath, CommentJson_Score, format='json')
+        view = comment.as_view()
         response = view(request)
 
     def test_sample9(self):
         request = factory.get(CommentPath_Get)
-#force_authenticate(request, user=user)  #This is not necessary
-        view = followSb.as_view()
+        view = deleteComment.as_view()
         response = view(request)
 
-
+'''
     def test_sample1(self):
         print(followSb(1, 2))
         print(followSb(1, 2))
