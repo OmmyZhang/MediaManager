@@ -80,7 +80,7 @@ class deleteComment(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class commentDealer(APIView):
+class comment(APIView):
     #no permission check here ?
     def post(self, request, format = None):
         body = request.data
