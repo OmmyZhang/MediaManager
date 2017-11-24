@@ -1,5 +1,6 @@
 *.pyc
-data/
+/data/*
+!data/avatar0
 __pycache__/
 .coverage
 .idea/

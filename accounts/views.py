@@ -1,6 +1,6 @@
 from django.db import IntegrityError
 from django.shortcuts import render
-from django.http import HttpResponseRedirect,HttpResponse
+from django.http import HttpResponseRedirect,HttpResponse,StreamingHttpResponse
 from django.contrib.auth import authenticate , login, logout
 from django.contrib.auth.models import User
 import os,time
@@ -21,6 +21,45 @@ from django.core.mail import send_mail
 class IsAdminOrSelf(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_superuser or (request.user.id == int(view.kwargs['id']))
+
+class Avatar(APIView):
+    permission_classes = (IsAdminOrSelf,)
+    
+    def post(self, request, id, format=None):
+
+        body = request.data
+
+        f = request.FILES['file']
+        
+        fname = 'avatar'+id
+        with open('data/'+fname, 'wb+') as des:
+            for chunk in f.chunks():
+                des.write(chunk)
+        
+        return Response()
+    
+    def get(self, request, id, format=None):
+
+        if not os.path.exists('data/avatar'+str(id)):
+            id = 0
+
+        resp = StreamingHttpResponse(file_iterator('data/avatar'+ str(id)))
+        resp['Content-Type'] = 'application/octet-stream'
+        resp['Content-Disposition'] = 'attachment;filename="%s"' % 'avatar'
+
+        return resp
+
+def file_iterator(file_name, chunck_size = 512):
+    with open(file_name,'rb+') as f:
+        while True:
+            c = f.read(chunck_size)
+            if c:
+                yield c
+            else:
+                break
+        f.close()
+    
+
 
 class OneUser(APIView):
     permission_classes = (IsAdminUser,)
