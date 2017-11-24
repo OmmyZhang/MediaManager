@@ -32,4 +32,4 @@ def imageCaption(imagePath):
         print(e)
         return None
 
-####################################
+
