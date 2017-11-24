@@ -13,40 +13,30 @@ import remainder.views
 
 class followSb(APIView):   #idone follow idtwo or just cancel
     #followee follow the follower, this is not halal
-    def post(self, request, format = None):
-        print("--------------------------------$$$$$$$$$$$$$$$$$$$$$$$$$test")
-        body = request.data
-        idone = body['id']
-        idtwo = body['othersID']
-        #if PeopleFollowPeople.objects.filter(followee = idone, follower = idtwo):
-        #No need to check this if frontend is correct
-        PeopleFollowPeople.objects.create(followee = idone, follower = idtwo)
-        remainder.views.sentNotice(idtwo,  str(idone) + 'has followed you! ');
+    def post(self, request, id1, id2, format = None):
+        print("---------------------------------------------$$$TEST")
+        PeopleFollowPeople.objects.create(followee = id1, follower = id2)
+        remainder.views.sentNotice(idtwo,  str(id1) + 'has followed you! ');
         return Response(status=status.HTTP_200_OK)
-    def delete(self, request, format = None):
-        body = request.data
-        idone = body['id']
-        idtwo = body['othersID']
-        PeopleFollowPeople.objects.filter(followee = idone, follower = idtwo).delete()
+    def delete(self, request, id1, id2, format = None):
+        PeopleFollowPeople.objects.filter(followee = id1, follower = id2).delete()
         return Response(status=status.HTTP_200_OK)
         # JUMPING : WE CAN SEND A MESSAGE HERE
 
 class getFollowerList(APIView):
-    def get(self, request, format = None):
-        body = request.data
-        pid = body['id']
+    def get(self, request, id1, format = None):
+        pid = id1
         f = []
-        for pid in PeopleFollowPeople.objects.filter(followee = id):
+        for pid in PeopleFollowPeople.objects.filter(followee = id1):
             f.append(pid.follower)
         return Response(f)
 
 class getFolloweeList(APIView): # get all the follower
-    def get(self, request, format = None):
-        body = request.data
-        pid = body['id']
+    def get(self, request, id1, format = None):
+        pid = id1
         f = []
-        for pid in PeopleFollowPeople.objects.filter(followee = id):
-            f.append(pid.follower)
+        for pid in PeopleFollowPeople.objects.filter(follower = id1):
+            f.append(pid.followee)
         return Response(f)
 
 def starFile(id, file): #idone star fileone or just cancel
