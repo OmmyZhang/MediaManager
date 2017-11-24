@@ -167,7 +167,7 @@ class FileById(APIView):
 
 
 class FileData(APIView):
-    permission_classes = (IsAdminOrAvailable,)
+    #permission_classes = (IsAdminOrAvailable,)
 
     def post(self, request, pk, format=None):
         
@@ -199,9 +199,9 @@ class FileData(APIView):
                 'isDir': False
                 }
 
-        id, resp = create_file_and_resp(data, 'data/'+fname)
+        pk, resp = create_file_and_resp(data, 'data/'+fname)
     
-        os.rename('data/'+fname,'data/'+str(id))
+        os.rename('data/'+fname,'data/'+str(pk))
 
         return resp
 
@@ -209,7 +209,7 @@ class FileData(APIView):
         
         f = get_file(pk)
 
-        resp = StreamingHttpResponse(file_iterator('data/'+ str(id)))
+        resp = StreamingHttpResponse(file_iterator('data/'+ str(pk)))
         resp['Content-Type'] = 'application/octet-stream'
         resp['Content-Disposition'] = 'attachment;filename="%s"' % f.name.encode('utf-8').decode('ISO-8859-1')
 
