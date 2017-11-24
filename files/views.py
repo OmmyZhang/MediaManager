@@ -123,7 +123,7 @@ class FileList(APIView):
         return  Response()
 
 def create_file_and_resp(data,fname):
-    data['modifyDate'] = time.strftime("%Y-%m-%dT%H:%m:%S")
+    data['modifyDate'] = time.strftime("%Y-%m-%dT%H:%M:%S")
     data['size'] = os.path.getsize(fname)
 
     serializer = FileSerializer(data=data)
@@ -161,7 +161,7 @@ class FileData(APIView):
 
         f = request.FILES['file']
         path = body['path']
-
+        print(request.user.username)
         fname = request.user.username + ':' + f.name + '.part_' + str(time.time())
         with open('data/'+fname, 'wb+') as des:
             for chunk in f.chunks():
@@ -170,7 +170,7 @@ class FileData(APIView):
         if int(pk) > 0:
             os.rename('data/'+fname, 'data/'+str(pk))
             oldf = get_file(pk)
-            oldf.modifyDate = time.strftime("%Y-%m-%dT%H:%m:%S")
+            oldf.modifyDate = time.strftime("%Y-%m-%dT%H:%M:%S")
             oldf.name = f.name
             oldf.size = os.path.getsize('data/'+str(pk))
             oldf.save()
@@ -180,7 +180,7 @@ class FileData(APIView):
         data = {
                 'ownerID': request.user.id,
                 'name': f.name,
-                'createDate': time.strftime("%Y-%m-%dT%H:%m:%S"),
+                'createDate': time.strftime("%Y-%m-%dT%H:%M:%S"),
                 'path': path,
                 'isDir': False
                 }

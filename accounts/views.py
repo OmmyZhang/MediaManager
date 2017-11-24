@@ -57,13 +57,13 @@ class Signup(APIView):
             uid = create_user(body)
             user = get_user(uid)
             login(request, user)
-            token = '2345678'  # TODO token
-            return Response(token, status=status.HTTP_201_CREATED)
+            token = Token.objects.create(user = user)
+            return Response(token.key, status=status.HTTP_201_CREATED)
         except IntegrityError as e:
             return Response({'info': '用户名已存在'}, status=status.HTTP_400_BAD_REQUEST)
-        except:
-            # TODO 告诉前端哪里错了
-            raise
+        except Exception as e:
+            return Response(repr(e))
+            #raise e
 
 class Login(APIView):
     permission_classes = (AllowAny,)
@@ -73,13 +73,16 @@ class Login(APIView):
         name   = body['username']
         passwd = body['password']
         user = authenticate(username=name,password=passwd)
-        token = '2345678'  # TODO token
-        # TODO info: 用户名不存在 / 密码错误
         if user is not None:
             login(request,user)
-            return Response({'token': token, 'userID': user.id})
+            token  = Token.objects.get_or_create(user = user)[0]
+            return Response({'token': token.key, 'userID': user.id})
         else:
-            return Response({'info':'login fail'},
+            if User.objects.filter(username = name).exists():
+                err = 'wrong password'
+            else:
+                err = 'no users'
+            return Response({'info':err},
                     status=status.HTTP_400_BAD_REQUEST)
 
 class Logout(APIView):
