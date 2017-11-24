@@ -13,6 +13,7 @@ from rest_framework.authtoken.models import Token
 from group.views import user_groups,group_mems,create_Belong
 from group.models import Belong
 from files.views import get_tag
+from django.core.mail import send_mail
 
 
 # Create your views here.
@@ -54,11 +55,15 @@ class Signup(APIView):
     def post(self, request, format=None):
         body = request.data
         try:
+            mail = body.get('email')
+            if not re.match('.+@.*tsinghua.edu.cn$',mail):
+                return Response({'info':'not tsinghua email'},status=status.HTTP_400_BAD_REQUEST)
             uid = create_user(body)
             user = get_user(uid)
             login(request, user)
             token = Token.objects.create(user = user)
-            return Response(token.key, status=status.HTTP_201_CREATED)
+            send_mail('宣传中心网盘注册验证链接', '请访问: media.zhangyn.me/signup?token=%s&id=%s' % (token.key, uid), '宣传中心网盘 <mail@zhangyn.me>', [user.email], False)
+            return Response(status=status.HTTP_201_CREATED)
         except IntegrityError as e:
             return Response({'info': '用户名已存在'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
