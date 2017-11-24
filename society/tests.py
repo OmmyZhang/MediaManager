@@ -51,10 +51,7 @@ CommentJson_Comment['type'] = 'comment'
 class SampleTestCase(TestCase):
     def setUp(self):
         pass
-
-    def test_sample1(self):
-        
-
+    def test_
 '''
     def test_sample2(self):
         request = factory.post(FollowPath2)
