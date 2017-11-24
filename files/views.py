@@ -113,14 +113,13 @@ class FileList(APIView):
                     'id':id,
                     'error':serializer.errors
                     })
-
-            if 'tags' in body:
+            print('hhhhh',id)
+            print(body)
+            print(body['tags'])
+            if 'tags' in body and 'shareToGroups' in body:
                 FileToTag.objects.filter(file_id = id).delete()
                 for t in body['tags']:
                     create_FileToTag(id, t['id'])
-            
-            if 'shareToGroups' in body:
-                FileToTag.objects.filter(file_id = id).delete()
                 for t in body['shareToGroups']:
                     create_FileToTag(id, t['id'])
             
