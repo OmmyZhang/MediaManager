@@ -94,6 +94,16 @@ class FileList(APIView):
                 continue
 
             f = get_file(id)
+            if f.isDir and ('path' in body or 'name' in body):
+                old_path = '^' + f.path + f.name +'/'
+                new_path = body.get('path', f.path) + body.get('name', f.name) + '/'
+                for f in StFile.objects.all():
+                    print(old_path, '->', new_path, ' ?? ', f.path)
+                    if re.match(old_path, f.path) and available_to_file(request.user, f.id):
+                        f.path = re.sub(old_path, new_path, f.path)
+                        print('get!')
+                        print(f.path)
+                        f.save()
             
             serializer = FileSerializer(f, data = body, partial=True)
             if serializer.is_valid():
@@ -124,7 +134,11 @@ class FileList(APIView):
 
 def create_file_and_resp(data,fname):
     data['modifyDate'] = time.strftime("%Y-%m-%dT%H:%M:%S")
-    data['size'] = os.path.getsize(fname)
+    
+    if fname is None:
+        data['size'] = 0
+    else:
+        data['size'] = os.path.getsize(fname)
 
     serializer = FileSerializer(data=data)
     if serializer.is_valid():
