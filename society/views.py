@@ -85,19 +85,19 @@ class comment(APIView):
     def post(self, request, format = None):
         body = request.data
         t_uesrid = body['userId']
-        t_fileid = body['fileId']
+        t_fileid = body['fileID']
         t_date = body['date']
-        t_type = int(body['type'])
-        if (t_type == 1):
+        t_type = body['type']
+        if (t_type == "comment"): 
             t_comment = body['comment']
             if len(t_comment) > 200:
                 return Response({"info":"Comment too long"},
                         status=status.HTTP_400_BAD_REQUEST)
             # JUMPING : WE CAN SEND A MESSAGE HERE
-        if (t_type == 2):
+        if (t_type == "star"):
             pass
             # JUMPING : WE CAN SEND A MESSAGE HERE
-        if (t_type == 3):
+        if (t_type == "score"):
             # JUMPING : WE CAN UPDATE FILE INFO HERE
             # JUMPING : WE CAN SEND A MESSAGE HERE
             pass
@@ -113,8 +113,8 @@ class comment(APIView):
         return Response(status=status.HTTP_200_OK)
 
     def get(self, request, format = None):
-        body = request.data
-        t_fileid = body['fileId']
+        body = request.GET
+        t_fileid = body['fileID']
         t_type = body['type']
         f = []
         for comment in PeopleComment.objects.filter(fileid = t_fileid, type = t_type):
@@ -129,12 +129,6 @@ class comment(APIView):
             a_comment['comment'] = comment.comment
             f.append(a_comment)
         return Response(f)
-    
-    def delete(self, request, _id, format = None):
-        body = request.data
-        t_commentid = _id
-        PeopleComment.objects.filter(commentid=t_commentid).delete()
-        return Response(status=status.HTTP_200_OK)
     
     def put(self,request,format=None):
         body = request.data
