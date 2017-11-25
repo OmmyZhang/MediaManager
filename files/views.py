@@ -1,6 +1,5 @@
 #-*-coding:UTF-8-*-
 from django.http import HttpResponseRedirect,HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 import os,time,shutil
 import re
@@ -166,7 +165,7 @@ class FileById(APIView):
 
 
 class FileData(APIView):
-    #permission_classes = (IsAdminOrAvailable,)
+    permission_classes = (AllowAny,)
 
     def post(self, request, pk, format=None):
         

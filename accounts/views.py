@@ -1,6 +1,6 @@
 from django.db import IntegrityError
 from django.shortcuts import render
-from django.http import HttpResponseRedirect,HttpResponse
+from django.http import HttpResponseRedirect,HttpResponse,StreamingHttpResponse
 from django.contrib.auth import authenticate , login, logout
 from django.contrib.auth.models import User
 import os,time
@@ -13,6 +13,7 @@ from rest_framework.authtoken.models import Token
 from group.views import user_groups,group_mems,create_Belong
 from group.models import Belong
 from files.views import get_tag
+from django.core.mail import send_mail
 
 
 # Create your views here.
@@ -20,6 +21,45 @@ from files.views import get_tag
 class IsAdminOrSelf(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_superuser or (request.user.id == int(view.kwargs['id']))
+
+class Avatar(APIView):
+    permission_classes = (IsAdminOrSelf,)
+    
+    def post(self, request, id, format=None):
+
+        body = request.data
+
+        f = request.FILES['file']
+        
+        fname = 'avatar'+id
+        with open('data/'+fname, 'wb+') as des:
+            for chunk in f.chunks():
+                des.write(chunk)
+        
+        return Response()
+    
+    def get(self, request, id, format=None):
+
+        if not os.path.exists('data/avatar'+str(id)):
+            id = 0
+
+        resp = StreamingHttpResponse(file_iterator('data/avatar'+ str(id)))
+        resp['Content-Type'] = 'application/octet-stream'
+        resp['Content-Disposition'] = 'attachment;filename="%s"' % 'avatar'
+
+        return resp
+
+def file_iterator(file_name, chunck_size = 512):
+    with open(file_name,'rb+') as f:
+        while True:
+            c = f.read(chunck_size)
+            if c:
+                yield c
+            else:
+                break
+        f.close()
+    
+
 
 class OneUser(APIView):
     permission_classes = (IsAdminUser,)
@@ -54,11 +94,15 @@ class Signup(APIView):
     def post(self, request, format=None):
         body = request.data
         try:
+            mail = body.get('email')
+            if not re.match('.+@.*tsinghua.edu.cn$',mail):
+                return Response({'info':'not tsinghua email'},status=status.HTTP_400_BAD_REQUEST)
             uid = create_user(body)
             user = get_user(uid)
             login(request, user)
             token = Token.objects.create(user = user)
-            return Response(token.key, status=status.HTTP_201_CREATED)
+            send_mail('宣传中心网盘注册验证链接', '请访问: media.zhangyn.me/signup?token=%s&id=%s' % (token.key, uid), '宣传中心网盘 <mail@zhangyn.me>', [user.email], False)
+            return Response(status=status.HTTP_201_CREATED)
         except IntegrityError as e:
             return Response({'info': '用户名已存在'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
