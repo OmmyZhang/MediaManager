@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^api-token-auth/', views.obtain_auth_token),
     url(r'^user/(?P<id>\d+)/f',include('society.urls')),
     url(r'^com',include('society.urls')),
+    url(r'^event',include('remainder.urls')),
     url(r'^user/?',include('accounts.urls')),
     url(r'^group/?',include('group.urls')),
     url(r'^file/?',include('files.urls')),
