@@ -17,7 +17,7 @@ class followSb(APIView):   #idone follow idtwo or just cancel
     def post(self, request, id1, id2, format = None):
         print("---------------------------------------------$$$TEST")
         PeopleFollowPeople.objects.create(followee = id1, follower = id2)
-        remainder.views.sentNotice(idtwo,  str(id1) + 'has followed you! ');
+        remainder.views.sentNotice(id2,  str(id1) + 'has followed you! ');
         return Response(status=status.HTTP_200_OK)
     def delete(self, request, id1, id2, format = None):
         PeopleFollowPeople.objects.filter(followee = id1, follower = id2).delete()
@@ -62,15 +62,9 @@ def getAllStarer(file): #get all the id stared the file
     return
 
 
-class haha(APIView):
-    def get(self,request,format=None):
-        print("HAHA")
-        return Response(status=status.HTTP_200_OK)
-
-
 class deleteComment(APIView):
     def delete(self, request, format = None):
-        body = request.data
+        body = request.GET
         t_commentid = body['commentid']
         PeopleComment.objects.filter(commentid=t_commentid).delete()
         return Response(status=status.HTTP_200_OK)
@@ -82,7 +76,7 @@ class comment(APIView):
     def post(self, request, format = None):
         print("here")
         body = request.data
-        t_uesrid = body['userId']
+        t_userid = body['userID']
         t_fileid = body['fileID']
         t_date = body['date']
         t_type = body['type']
@@ -99,15 +93,23 @@ class comment(APIView):
             # JUMPING : WE CAN UPDATE FILE INFO HERE
             # JUMPING : WE CAN SEND A MESSAGE HERE
             pass
-        t_commentid = random.randint(1, 2147483647)
-        while (True):
-            if PeopleComment.objects.filter(commentid = t_commentid):
-                break
-            t_commentid = random.randint(1, 2147483647)
+        t_commentid = body['id']
+        #t_commentid = random.randint(1, 2147483647)
+        #while (True):
+        #    try:
+        #        PeopleComment.objects.get(commentid = t_commentid)
+        #        t_commentid = random.randint(1, 2147483647)
+        #    except:
+        #        break
+        _star = True
+        if (body['star'] == "true"):
+            _star = True
+        else:
+            _star = False
         PeopleComment.objects.create(commentid = t_commentid, userid = t_userid,
                                      fileid = t_fileid      , date = t_date,
                                      type = t_type          , comment = body['comment'],
-                                     star = body['star']    , score = body['score'])
+                                     star = _star    , score = body['score'])
         return Response(status=status.HTTP_200_OK)
 
     def get(self, request, format = None):
@@ -129,16 +131,22 @@ class comment(APIView):
         return Response(f)
     
     def put(self,request,format=None):
-        body = request.data
-        t_commentid = body['id']
-        _comment = PeopletComment.objects.filter(commentid=t_commentid)
+        body = request.GET
+        print("raw id is %s"%body['id'])
+        t_commentid = int(body['id'])
+        print("id is %d"%t_commentid)
+        _comment = PeopleComment.objects.get(commentid=t_commentid)
         _comment.fileid = body['fileID']
         _comment.userid = body['userID']
         _comment.date = body['date']
         _comment.type = body['type']
-        _comment.star = body['star']
+        if (body['star'] == True):
+            _comment.star = True
+        else:
+            _comment.star = False
         _comment.score = body['score']
         _comment.comment = body['comment']
+        _comment.save()
         return Response(status = status.HTTP_200_OK)
 
 def removeFile(file): #remove the star and comment about a file
