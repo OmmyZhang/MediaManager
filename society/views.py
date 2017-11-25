@@ -6,6 +6,7 @@ from .models import PeopleFollowPeople, PeopleStarFile, PeopleComment
 from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 import random
 import remainder.views
 #More import if needed
@@ -61,6 +62,11 @@ def getAllStarer(file): #get all the id stared the file
     return
 
 
+class haha(APIView):
+    def get(self,request,format=None):
+        print("HAHA")
+        return Response(status=status.HTTP_200_OK)
+
 
 class deleteComment(APIView):
     def delete(self, request, format = None):
@@ -72,7 +78,9 @@ class deleteComment(APIView):
 
 class comment(APIView):
     #no permission check here ?
+    permission_classes = (AllowAny,)
     def post(self, request, format = None):
+        print("here")
         body = request.data
         t_uesrid = body['userId']
         t_fileid = body['fileID']
