@@ -13,36 +13,30 @@ import remainder.views
 
 class followSb(APIView):   #idone follow idtwo or just cancel
     #followee follow the follower, this is not halal
-    def post(self, request, format = None):
-        body = request.data
-        idone = body['id']
-        idtwo = body['othersID']
+    def post(self, request, id, otherID, format = None):
+        idone = id
+        idtwo = otherID
         #if PeopleFollowPeople.objects.filter(followee = idone, follower = idtwo):
         #No need to check this if frontend is correct
         PeopleFollowPeople.objects.create(followee = idone, follower = idtwo)
         remainder.views.sentNotice(idtwo,  str(idone) + 'has followed you! ');
         return Response(status=status.HTTP_200_OK)
-    def delete(self, request, format = None):
-        body = request.data
-        idone = body['id']
-        idtwo = body['othersID']
+    def delete(self, request, id, otherID, format = None):
+        idone = id
+        idtwo = otherID
         PeopleFollowPeople.objects.filter(followee = idone, follower = idtwo).delete()
         return Response(status=status.HTTP_200_OK)
         # JUMPING : WE CAN SEND A MESSAGE HERE
 
 class getFollowerList(APIView):
-    def get(self, request, format = None):
-        body = request.data
-        pid = body['id']
+    def get(self, request, id, format = None):
         f = []
         for pid in PeopleFollowPeople.objects.filter(followee = id):
             f.append(pid.follower)
         return Response(f)
 
 class getFolloweeList(APIView): # get all the follower
-    def get(self, request, format = None):
-        body = request.data
-        pid = body['id']
+    def get(self, request, id, format = None):
         f = []
         for pid in PeopleFollowPeople.objects.filter(followee = id):
             f.append(pid.follower)
@@ -70,10 +64,8 @@ def getAllStarer(file): #get all the id stared the file
     return
 
 class deleteComment(APIView):
-    def delete(self, request, format = None):
-        body = request.data
-        t_commentid = body['commentid']
-        PeopleComment.objects.filter(commentid=t_commentid).delete()
+    def delete(self, request, id, format = None):
+        PeopleComment.objects.filter(commentid=id).delete()
         return Response(status=status.HTTP_200_OK)
 
 
@@ -81,38 +73,38 @@ class commentDealer(APIView):
     #no permission check here ?
     def post(self, request, format = None):
         body = request.data
-        t_uesrid = body['userId']
-        t_fileid = body['fileId']
+        t_userid = body['userID']
+        t_fileid = body['fileID']
         t_date = body['date']
-        t_type = int(body['type'])
-        if (t_type == 1):
+        t_type = body['type']
+        if (t_type == 'comment'):
             t_comment = body['comment']
             if len(t_comment) > 200:
                 return Response({"info":"Comment too long"},
                         status=status.HTTP_400_BAD_REQUEST)
             # JUMPING : WE CAN SEND A MESSAGE HERE
-        if (t_type == 2):
+        if (t_type == 'star'):
             pass
             # JUMPING : WE CAN SEND A MESSAGE HERE
-        if (t_type == 3):
+        if (t_type == 'score'):
             # JUMPING : WE CAN UPDATE FILE INFO HERE
             # JUMPING : WE CAN SEND A MESSAGE HERE
             pass
         t_commentid = random.randint(1, 2147483647)
         while (True):
-            if PeopleComment.objects.filter(commentid = t_commentid):
+            if not PeopleComment.objects.filter(commentid = t_commentid):
                 break
             t_commentid = random.randint(1, 2147483647)
         PeopleComment.objects.create(commentid = t_commentid, userid = t_userid,
                                      fileid = t_fileid      , date = t_date,
-                                     type = t_type          , comment = body['comment'],
-                                     star = body['star']    , score = body['score'])
+                                     type = t_type          , comment = body.get('comment'),
+                                     star = body.get('star'), score = body.get('score'))
         return Response(status=status.HTTP_200_OK)
 
     def get(self, request, format = None):
-        body = request.data
-        t_fileid = body['fileId']
-        t_type = body['type']
+        body = request.GET
+        t_fileid = body.get('fileID')
+        t_type = body.get('type')
         f = []
         for comment in PeopleComment.objects.filter(fileid = t_fileid, type = t_type):
             a_comment = {}
