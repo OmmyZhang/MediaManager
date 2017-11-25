@@ -13,7 +13,7 @@ urlpatterns = [
 
         url(r'^(?P<id1>\d+)/follower/?$', sviews.getFollowerList.as_view()),
         url(r'^(?P<id1>\d+)/following/?$', sviews.getFolloweeList.as_view()),
-	    url(r'^(?P<id1>\d+)/following/(?P<id2>\d+)/?$', sviews.followSb.as_view())
-	    url(r'^(?P<id>\d+)/avatar/?$', views.Avatar.as_view())
+	url(r'^(?P<id1>\d+)/following/(?P<id2>\d+)/?$', sviews.followSb.as_view()),
+	url(r'^(?P<id>\d+)/avatar/?$', views.Avatar.as_view())
         ]
         
