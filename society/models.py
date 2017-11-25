@@ -20,7 +20,7 @@ class PeopleComment(models.Model):
 	userid = models.BigIntegerField(default = 0)
 	fileid = models.CharField(max_length = 100)
 	date = models.CharField(max_length = 30)
-	type = models.IntegerField(default = 0)
+	type = models.CharField(max_length = 20)
 	star = models.BooleanField(default = False)
 	score = models.IntegerField(default = 0)
 	comment = models.CharField(max_length = 200)

@@ -12,28 +12,28 @@ class SampleTestCase(TestCase):
         
         time0 = time.time()
         T0 = time.localtime(time0)
-        time.sleep(5)
+        #time.sleep(5)
 
         self.assertEqual(sentNotice(1, str1), True)
         time1 = time.time()
         T1 = time.localtime(time1)
         print("insert %s at %s\n" %(str1,time.ctime(time1)))
         
-        time.sleep(5)
+        #time.sleep(5)
         
         self.assertEqual(sentNotice(2, str2), True)
         time2 = time.time()
         T2 = time.localtime(time2)
         print("insert %s at %s\n" %(str2,time.ctime(time2)))
         
-        time.sleep(5)
+        #time.sleep(5)
         
         self.assertEqual(sentNotice(1, str3), True)
         time3 = time.time()
         T3 = time.localtime(time3)
         print("insert %s at %s\n"%(str3,time.ctime(time3)))
 
-        time.sleep(5)
+        #time.sleep(5)
 
         self.assertEqual(sentNotice(2,str4),True)
         time4 = time.time()
