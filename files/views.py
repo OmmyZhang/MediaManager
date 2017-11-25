@@ -1,6 +1,5 @@
 #-*-coding:UTF-8-*-
 from django.http import HttpResponseRedirect,HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 import os,time,shutil
 import re
@@ -41,14 +40,14 @@ class FileList(APIView):
     def get(self, request, format=None):
         body = request.GET
 
-        if 'path' in body:
+        if body.get('path'):
             return Response([
                 format_file(ff.id)
                 for ff in StFile.objects.filter(path = request.GET['path'])
                 if available_to_file(request.user, ff.id)
                 ])
 
-        if 'name' in body:
+        if body.get('name'):
             rex = body['name']
             return Response([
                 format_file(ff.id)
@@ -56,8 +55,8 @@ class FileList(APIView):
                 if (re.match(rex,ff.name) is not None) and available_to_file(request.user, ff.id)
                 ])
         
-        if 'tags[]' in body:
-            tags = body.getlist('tags[]')
+        if body.getlist('tags'):
+            tags = body.getlist('tags')
             f = []
             for i in tags:
                 fi = tag_files(i)
@@ -94,6 +93,16 @@ class FileList(APIView):
                 continue
 
             f = get_file(id)
+            if f.isDir and ('path' in body or 'name' in body):
+                old_path = '^' + f.path + f.name +'/'
+                new_path = body.get('path', f.path) + body.get('name', f.name) + '/'
+                for f in StFile.objects.all():
+                    print(old_path, '->', new_path, ' ?? ', f.path)
+                    if re.match(old_path, f.path) and available_to_file(request.user, f.id):
+                        f.path = re.sub(old_path, new_path, f.path)
+                        print('get!')
+                        print(f.path)
+                        f.save()
             
             serializer = FileSerializer(f, data = body, partial=True)
             if serializer.is_valid():
@@ -103,14 +112,13 @@ class FileList(APIView):
                     'id':id,
                     'error':serializer.errors
                     })
-
-            if 'tags' in body:
+            print('hhhhh',id)
+            print(body)
+            print(body['tags'])
+            if 'tags' in body and 'shareToGroups' in body:
                 FileToTag.objects.filter(file_id = id).delete()
                 for t in body['tags']:
                     create_FileToTag(id, t['id'])
-            
-            if 'shareToGroups' in body:
-                FileToTag.objects.filter(file_id = id).delete()
                 for t in body['shareToGroups']:
                     create_FileToTag(id, t['id'])
             
@@ -123,8 +131,12 @@ class FileList(APIView):
         return  Response()
 
 def create_file_and_resp(data,fname):
-    data['modifyDate'] = time.strftime("%Y-%m-%dT%H:%m:%S")
-    data['size'] = os.path.getsize(fname)
+    data['modifyDate'] = time.strftime("%Y-%m-%dT%H:%M:%S")
+    
+    if fname is None:
+        data['size'] = 0
+    else:
+        data['size'] = os.path.getsize(fname)
 
     serializer = FileSerializer(data=data)
     if serializer.is_valid():
@@ -153,7 +165,7 @@ class FileById(APIView):
 
 
 class FileData(APIView):
-    permission_classes = (IsAdminOrAvailable,)
+    permission_classes = (AllowAny,)
 
     def post(self, request, pk, format=None):
         
@@ -161,7 +173,7 @@ class FileData(APIView):
 
         f = request.FILES['file']
         path = body['path']
-
+        print(request.user.username)
         fname = request.user.username + ':' + f.name + '.part_' + str(time.time())
         with open('data/'+fname, 'wb+') as des:
             for chunk in f.chunks():
@@ -170,7 +182,7 @@ class FileData(APIView):
         if int(pk) > 0:
             os.rename('data/'+fname, 'data/'+str(pk))
             oldf = get_file(pk)
-            oldf.modifyDate = time.strftime("%Y-%m-%dT%H:%m:%S")
+            oldf.modifyDate = time.strftime("%Y-%m-%dT%H:%M:%S")
             oldf.name = f.name
             oldf.size = os.path.getsize('data/'+str(pk))
             oldf.save()
@@ -180,14 +192,14 @@ class FileData(APIView):
         data = {
                 'ownerID': request.user.id,
                 'name': f.name,
-                'createDate': time.strftime("%Y-%m-%dT%H:%m:%S"),
+                'createDate': time.strftime("%Y-%m-%dT%H:%M:%S"),
                 'path': path,
                 'isDir': False
                 }
 
-        id, resp = create_file_and_resp(data, 'data/'+fname)
+        pk, resp = create_file_and_resp(data, 'data/'+fname)
     
-        os.rename('data/'+fname,'data/'+str(id))
+        os.rename('data/'+fname,'data/'+str(pk))
 
         return resp
 
@@ -195,7 +207,7 @@ class FileData(APIView):
         
         f = get_file(pk)
 
-        resp = StreamingHttpResponse(file_iterator('data/'+ str(id)))
+        resp = StreamingHttpResponse(file_iterator('data/'+ str(pk)))
         resp['Content-Type'] = 'application/octet-stream'
         resp['Content-Disposition'] = 'attachment;filename="%s"' % f.name.encode('utf-8').decode('ISO-8859-1')
 

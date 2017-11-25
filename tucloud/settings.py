@@ -149,3 +149,11 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static")
 ]
+
+EMAIL_USE_SSL = True
+EMAIL_HOST = 'mail.privateemail.com'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'mail@zhangyn.me'
+EMAIL_HOST_PASSWORD = 'forRuanGongProject'
+DEFAULT_FROM_EMAIL = '宣传中心网盘 <mail@zhangyn.me>'
+
