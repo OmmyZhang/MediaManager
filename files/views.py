@@ -41,14 +41,14 @@ class FileList(APIView):
     def get(self, request, format=None):
         body = request.GET
 
-        if 'path' in body:
+        if body.get('path'):
             return Response([
                 format_file(ff.id)
                 for ff in StFile.objects.filter(path = request.GET['path'])
                 if available_to_file(request.user, ff.id)
                 ])
 
-        if 'name' in body:
+        if body.get('name'):
             rex = body['name']
             return Response([
                 format_file(ff.id)
@@ -56,8 +56,8 @@ class FileList(APIView):
                 if (re.match(rex,ff.name) is not None) and available_to_file(request.user, ff.id)
                 ])
         
-        if 'tags[]' in body:
-            tags = body.getlist('tags[]')
+        if body.getlist('tags'):
+            tags = body.getlist('tags')
             f = []
             for i in tags:
                 fi = tag_files(i)

@@ -120,7 +120,7 @@ class UserById(APIView):
                 for gg in body['groups']:
                     create_Belong(id, gg['id'])
 
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(format_user(id), status=status.HTTP_200_OK)
         else:
             return Response({'info':'No this user'},
                     status=status.HTTP_400_BAD_REQUEST)
@@ -168,7 +168,7 @@ def format_user(id):
                 'phone': 'string',
                 'image': 'string',
                 'groups': [ {'id':gid,'name':get_tag(gid).name} 
-                    for gid in user_groups(u.id)
+                    for gid in user_groups(u.id) if get_tag(gid) # 可能用户组已经被删除
                     ],
                 }
     else:
