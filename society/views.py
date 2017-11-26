@@ -17,7 +17,7 @@ class followSb(APIView):   #idone follow idtwo or just cancel
     def post(self, request, id1, id2, format = None):
         print("---------------------------------------------$$$TEST")
         PeopleFollowPeople.objects.create(followee = id1, follower = id2)
-        remainder.views.sentNotice(id2,  str(id1) + 'has followed you! ');
+        remainder.views.sentNotice(id2,  str(id1) + ' has followed you! ');
         return Response(status=status.HTTP_200_OK)
     def delete(self, request, id1, id2, format = None):
         PeopleFollowPeople.objects.filter(followee = id1, follower = id2).delete()
@@ -26,6 +26,7 @@ class followSb(APIView):   #idone follow idtwo or just cancel
 
 class getFollowerList(APIView):
     def get(self, request, id1, format = None):
+        print("haha")
         pid = id1
         f = []
         for pid in PeopleFollowPeople.objects.filter(followee = id1):
@@ -115,18 +116,26 @@ class comment(APIView):
     def get(self, request, format = None):
         body = request.GET
         t_fileid = body['fileID']
-        t_type = body['type']
+        t_type = None
+        try:
+            t_type = body['type']
+        except:
+            t_type = None
         f = []
-        for comment in PeopleComment.objects.filter(fileid = t_fileid, type = t_type):
-            a_comment = {}
-            a_comment['commentid'] = comment.commentid
-            a_comment['userid'] = comment.userid
-            a_comment['fileid'] = comment.fileid
-            a_comment['date'] = comment.date
-            a_comment['type'] = comment.type
-            a_comment['star'] = comment.star
-            a_comment['score'] = comment.score
-            a_comment['comment'] = comment.comment
+        for comment in PeopleComment.objects.filter(fileid = t_fileid):
+            if (t_type == None or comment.type == t_type):
+                a_comment = {}
+                a_comment['commentid'] = comment.commentid
+                a_comment['userid'] = comment.userid
+                a_comment['fileid'] = comment.fileid
+                a_comment['date'] = comment.date
+                a_comment['type'] = comment.type
+                if comment.star == True:
+                    a_comment['star'] = "true"
+                else:
+                    a_comment['star'] = "False"
+                a_comment['score'] = comment.score
+                a_comment['comment'] = comment.comment
             f.append(a_comment)
         return Response(f)
     
