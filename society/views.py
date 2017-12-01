@@ -64,10 +64,8 @@ def getAllStarer(file): #get all the id stared the file
 
 
 class deleteComment(APIView):
-    def delete(self, request, format = None):
-        body = request.GET
-        t_commentid = body['commentid']
-        PeopleComment.objects.filter(commentid=t_commentid).delete()
+    def delete(self, request, id, format = None):
+        PeopleComment.objects.filter(commentid=id).delete()
         return Response(status=status.HTTP_200_OK)
 
 
@@ -75,7 +73,6 @@ class comment(APIView):
     #no permission check here ?
     permission_classes = (AllowAny,)
     def post(self, request, format = None):
-        print("here")
         body = request.data
         t_userid = body['userID']
         t_fileid = body['fileID']
@@ -94,24 +91,22 @@ class comment(APIView):
             # JUMPING : WE CAN UPDATE FILE INFO HERE
             # JUMPING : WE CAN SEND A MESSAGE HERE
             pass
-        t_commentid = body['id']
-        #t_commentid = random.randint(1, 2147483647)
-        #while (True):
-        #    try:
-        #        PeopleComment.objects.get(commentid = t_commentid)
-        #        t_commentid = random.randint(1, 2147483647)
-        #    except:
-        #        break
-        _star = True
-        if (body['star'] == "true"):
-            _star = True
-        else:
-            _star = False
+        t_commentid = random.randint(1, 2147483647)
+        while (True):
+           try:
+               PeopleComment.objects.get(commentid = t_commentid)
+               t_commentid = random.randint(1, 2147483647)
+           except:
+               break
+        body['id'] = t_commentid
+        _star = True if body.get('star') else False
+        _score = body.get('score') if body.get('score') else 0
+        _comment = body.get('comment') if body.get('comment') else ""
         PeopleComment.objects.create(commentid = t_commentid, userid = t_userid,
                                      fileid = t_fileid      , date = t_date,
-                                     type = t_type          , comment = body['comment'],
-                                     star = _star    , score = body['score'])
-        return Response(status=status.HTTP_200_OK)
+                                     type = t_type          , comment = _comment,
+                                     star = _star    , score = _score)
+        return Response(body, status=status.HTTP_200_OK)
 
     def get(self, request, format = None):
         body = request.GET
@@ -123,11 +118,11 @@ class comment(APIView):
             t_type = None
         f = []
         for comment in PeopleComment.objects.filter(fileid = t_fileid):
-            if (t_type == None or comment.type == t_type):
+            if (t_type == "" or comment.type == t_type):
                 a_comment = {}
-                a_comment['commentid'] = comment.commentid
-                a_comment['userid'] = comment.userid
-                a_comment['fileid'] = comment.fileid
+                a_comment['id'] = comment.commentid
+                a_comment['userID'] = comment.userid
+                a_comment['fileID'] = comment.fileid
                 a_comment['date'] = comment.date
                 a_comment['type'] = comment.type
                 if comment.star == True:
@@ -136,11 +131,11 @@ class comment(APIView):
                     a_comment['star'] = "False"
                 a_comment['score'] = comment.score
                 a_comment['comment'] = comment.comment
-            f.append(a_comment)
+                f.append(a_comment)
         return Response(f)
     
     def put(self,request,format=None):
-        body = request.GET
+        body = request.data
         print("raw id is %s"%body['id'])
         t_commentid = int(body['id'])
         print("id is %d"%t_commentid)
@@ -156,7 +151,7 @@ class comment(APIView):
         _comment.score = body['score']
         _comment.comment = body['comment']
         _comment.save()
-        return Response(status = status.HTTP_200_OK)
+        return Response(body, status = status.HTTP_200_OK)
 
 def removeFile(file): #remove the star and comment about a file
     PeopleStarFile.objects.filter(fileid = file).delete()
