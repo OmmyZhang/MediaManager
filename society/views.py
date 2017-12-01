@@ -24,7 +24,7 @@ class followSb(APIView):   #idone follow idtwo or just cancel
         return Response(status=status.HTTP_200_OK)
         # JUMPING : WE CAN SEND A MESSAGE HERE
 
-class getFollowerList(APIView):
+class getFolloweeList(APIView):
     def get(self, request, id1, format = None):
         print("haha")
         pid = id1
@@ -33,7 +33,7 @@ class getFollowerList(APIView):
             f.append(pid.follower)
         return Response(f)
 
-class getFolloweeList(APIView): # get all the follower
+class getFollowerList(APIView): # get all the follower
     def get(self, request, id1, format = None):
         pid = id1
         f = []

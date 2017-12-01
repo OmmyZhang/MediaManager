@@ -62,7 +62,7 @@ def file_iterator(file_name, chunck_size = 512):
 
 
 class OneUser(APIView):
-    permission_classes = (IsAdminUser,)
+    permission_classes = (AllowAny,)  # TODO 目前简单粗暴地取消权限了
     
     def get(self, request, format=None):
         get = request.GET
@@ -135,7 +135,7 @@ class Logout(APIView):
         return Response()
 
 class UserById(APIView):
-    permission_classes = (IsAdminOrSelf,)
+    permission_classes = (AllowAny,) # TODO 目前简单粗暴地取消权限了
 
     def get(self, request, id, format=None):
         u = format_user(id)
