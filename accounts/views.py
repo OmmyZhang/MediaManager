@@ -23,7 +23,7 @@ class IsAdminOrSelf(permissions.BasePermission):
         return request.user.is_superuser or (request.user.id == int(view.kwargs['id']))
 
 class Avatar(APIView):
-    permission_classes = (IsAdminOrSelf,)
+    permission_classes = (AllowAny,)
     
     def post(self, request, id, format=None):
 
