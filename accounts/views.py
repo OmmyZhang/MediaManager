@@ -101,7 +101,7 @@ class Signup(APIView):
             user = get_user(uid)
             login(request, user)
             token = Token.objects.create(user = user)
-            send_mail('宣传中心网盘注册验证链接', '请访问: media.zhangyn.me/signup?token=%s&id=%s' % (token.key, uid), '宣传中心网盘 <mail@zhangyn.me>', [user.email], False)
+            send_mail('宣传中心网盘注册验证链接', '请访问: media.zhangyn.me/#/signup?token=%s&id=%s' % (token.key, uid), '宣传中心网盘 <mail@zhangyn.me>', [user.email], False)
             return Response(status=status.HTTP_201_CREATED)
         except IntegrityError as e:
             return Response({'info': '用户名已存在'}, status=status.HTTP_400_BAD_REQUEST)
@@ -153,7 +153,7 @@ class UserById(APIView):
             u.username = body['username']
             u.first_name = body['firstName']
             u.email = body['email']
-            # TODO 更新 phone
+            u.last_name = body['phone']
 
             u.save()
             
@@ -209,8 +209,7 @@ def format_user(id):
                 'firstName': u.first_name,
                 'lastName': u.last_name,
                 'email': u.email,
-                'phone': 'string',
-                'image': 'string',
+                'phone': u.last_name,
                 'groups': [ {'id':gid,'name':get_tag(gid).name} 
                     for gid in user_groups(u.id) if get_tag(gid) # 可能用户组已经被删除
                     ],
@@ -225,8 +224,6 @@ def create_user(info):
                 password = info['password']
                 )
     newM.save()
-    
-    #os.makedirs('data/'+nam)
     
     return newM.id
 
