@@ -14,6 +14,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny,IsAdminUser
 
+import http.client, urllib.request, urllib.parse, urllib.error, base64, json
+
 class IsAdminOrAvailable(permissions.BasePermission):
     def has_permission(self, request, view):
         return available_to_file(request.user, int(view.kwargs['pk']))
@@ -198,8 +200,29 @@ class FileData(APIView):
                 }
 
         pk, resp = create_file_and_resp(data, 'data/'+fname)
-    
+
         os.rename('data/'+fname,'data/'+str(pk))
+        
+        headers = { 
+        'Content-Type': 'application/json',
+        'Ocp-Apim-Subscription-Key': '7ec1f8ac4b214fdcb94af87b30902578'
+        }
+        
+        params = urllib.parse.urlencode({
+        'visualFeatures': 'tags',
+        'language': 'en',
+        })
+        
+        conn = http.client.HTTPSConnection('westcentralus.api.cognitive.microsoft.com')
+        conn.request("POST", "/vision/v1.0/analyze?%s" % params, "{'url':'http://pan.zhangyn.me/file/%d/data/'}" % 25, headers)
+        response = conn.getresponse()
+        dd = response.read()
+        pp = json.loads(str(dd, encoding="utf-8"))
+
+        for tt in pp['tags']:
+            tn = tt['name']
+            tag = StTag.objects.get_or_create(name = tn)[0]
+            create_FileToTag(pk, tag.id)
 
         return resp
 

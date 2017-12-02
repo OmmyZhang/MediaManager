@@ -14,7 +14,7 @@ class FileToTag(models.Model):
 class StTag(models.Model):
     name = models.CharField(max_length = 100)
     isGroup = models.BooleanField(default = False)
-    color = models.CharField(max_length=20)
+    color = models.CharField(max_length=20, default = 'blue')
     def __str__(self):
         return str(self.id) + ' is ' +self.name + ' --> ' + self.color
 

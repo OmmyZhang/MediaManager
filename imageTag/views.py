@@ -19,17 +19,17 @@ def imageCaption(imagePath):
     try:
         conn = http.client.HTTPSConnection('westcentralus.api.cognitive.microsoft.com')
         conn.request("POST", "/vision/v1.0/analyze?%s" % params, body, headers)
-    response = conn.getresponse()
-    data = response.read()
+        response = conn.getresponse()
+        data = response.read()
 
-    parsed = json.loads(data)
-    print ("Response:")
-    print (json.dumps(parsed, sort_keys=True, indent=2))
-    conn.close()
+        parsed = json.loads(data)
+        print ("Response:")
+        print (json.dumps(parsed, sort_keys=True, indent=2))
+        conn.close()
 
     except Exception as e:
         print('Error:')
         print(e)
         return None
 
-
+imageCaption('??')
