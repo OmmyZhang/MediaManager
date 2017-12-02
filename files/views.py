@@ -174,6 +174,7 @@ class FileData(APIView):
         body = request.data
 
         f = request.FILES['file']
+        print(f.content_type)
         path = body['path']
         print(request.user.username)
         fname = request.user.username + ':' + f.name + '.part_' + str(time.time())
@@ -202,6 +203,9 @@ class FileData(APIView):
         pk, resp = create_file_and_resp(data, 'data/'+fname)
 
         os.rename('data/'+fname,'data/'+str(pk))
+
+        if f.content_type[:5] != 'image':
+            return resp
         
         headers = { 
         'Content-Type': 'application/json',
@@ -214,7 +218,7 @@ class FileData(APIView):
         })
         
         conn = http.client.HTTPSConnection('westcentralus.api.cognitive.microsoft.com')
-        conn.request("POST", "/vision/v1.0/analyze?%s" % params, "{'url':'http://pan.zhangyn.me/file/%d/data/'}" % 25, headers)
+        conn.request("POST", "/vision/v1.0/analyze?%s" % params, "{'url':'http://pan.zhangyn.me/file/%d/data/'}" % pk, headers)
         response = conn.getresponse()
         dd = response.read()
         pp = json.loads(str(dd, encoding="utf-8"))
