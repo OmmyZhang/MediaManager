@@ -83,7 +83,7 @@ class OneUser(APIView):
             uid = create_user(body)
             for g in body['groups']:
                 create_Belong(uid,g['id'])
-            return Response(status=status.HTTP_201_CREATED)
+            return Response(format_user(uid), status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'info':repr(e)},
                     status=status.HTTP_400_BAD_REQUEST)
@@ -219,9 +219,11 @@ def format_user(id):
 
 def create_user(info):
     newM = User.objects.create_user(
-                username = info['username'],
-                email = info['email'],
-                password = info['password']
+                username = info.get('username'),
+                email = info.get('email'),
+                password = info.get('password'),
+                first_name = info.get('firstName'),
+                last_name = info.get('phone')
                 )
     newM.save()
     
@@ -236,86 +238,3 @@ def get_user(id):
 def regex_user(rex):
     return [ u.id for u in User.objects.all() 
             if re.match(rex,u.username) is not None ]
-
-#------------------------------------
-'''
-def login_view(request):
-    try:
-        go_url = request.GET['next']
-    except:
-        go_url = '/files/'
-
-    name   = ''
-    passwd = ''
-    error  = ''
-    
-    if request.POST:
-        name = request.POST['name']
-        passwd = request.POST['passwd']
-        
-        if(not name or not passwd):
-            error = 'missInfo'
-        
-        if(not error):
-            try:
-                p = User.objects.get(username=name)
-            except:
-                error = 'notFind'
-        
-        if(not error):
-            user = authenticate(username=name,password=passwd)
-            if user is not None:
-                login(request,user)
-            else:
-                error = 'wrongPasswd'
-
-    if request.user.is_authenticated:
-        return HttpResponseRedirect(go_url)
-
-    return render(request,'accounts/login.html',{'n':name,'p':passwd,'e':error,'go':go_url})
-
-def logout_view(request):
-    logout(request)
-    return HttpResponseRedirect('/')
-
-def register_view(request):
-    nam='';mail='';pho='';passwd='';
-    err = ''
-
-    if request.POST:
-        nam = request.POST['name']
-        mail = request.POST['email']
-        pho = request.POST['phone']
-        passwd = request.POST['password']
-        if not ( nam and mail and pho and passwd):
-            err = 'missInfo'
-
-        if not err:
-                if User.objects.filter(username=nam) or User.objects.filter(email=mail):
-                    err = 'alr'
-        if not err:
-            newM = User.objects.create_user(nam,mail,passwd)
-            while(True):
-                user_id = str(int(time.time()*1000) % 10000) + str(hash(nam) % 10000)
-                if not User.objects.filter(first_name = user_id):
-                    break;
-            newM.first_name = user_id;
-            newM.save()
-            login(request,newM)
-            try:
-                os.makedirs('data/'+nam)
-                return HttpResponseRedirect('/')
-            except:
-                return HttpResponse('<h1>Create dir fail')
-
-
-    context =   {
-                'nam':nam,
-                'ema':mail,
-                'passwd':passwd,
-                'pho':pho,
-                'e':err,
-                }
-
-    return render(request,'accounts/register.html',context) 
-'''
