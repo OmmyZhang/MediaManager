@@ -222,8 +222,8 @@ def create_user(info):
                 username = info.get('username'),
                 email = info.get('email'),
                 password = info.get('password'),
-                first_name = info.get('firstName'),
-                last_name = info.get('phone')
+                first_name = info.get('firstName', 'unknow'),
+                last_name = info.get('phone', 'unknow')
                 )
     newM.save()
     
